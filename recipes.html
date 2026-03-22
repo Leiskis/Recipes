@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Recipe Table</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #FAF7F2;
+    --warm-white: #FDF9F4;
+    --ink: #1C1915;
+    --ink-soft: #4A4540;
+    --ink-muted: #8C8680;
+    --rust: #C15B34;
+    --rust-light: #F2E8E2;
+    --sage: #5A6B52;
+    --sage-light: #E8EDE6;
+    --gold: #B8913A;
+    --border: rgba(28,25,21,0.1);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* Header */
+  header {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    letter-spacing: 0.02em;
+    color: var(--cream);
+  }
+
+  .logo span {
+    color: var(--gold);
+    font-style: italic;
+  }
+
+  .header-nav {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .header-nav a {
+    color: rgba(250,247,242,0.65);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .header-nav a:hover { color: var(--cream); }
+
+  /* Hero */
+  .hero {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(250,247,242,0.08);
+  }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.2rem;
+    font-weight: 500;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 400;
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+    letter-spacing: -0.01em;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero p {
+    color: rgba(250,247,242,0.6);
+    font-size: 16px;
+    max-width: 480px;
+    margin: 0 auto 2.5rem;
+    font-weight: 300;
+  }
+
+  /* Search & filter */
+  .controls {
+    background: var(--warm-white);
+    border-bottom: 1px solid var(--border);
+    padding: 1.25rem 2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .search-wrap {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+  }
+
+  .search-wrap svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--ink-muted);
+  }
+
+  #searchInput {
+    width: 100%;
+    padding: 9px 12px 9px 36px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  #searchInput:focus { border-color: var(--rust); }
+  #searchInput::placeholder { color: var(--ink-muted); }
+
+  .filter-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .pill {
+    padding: 7px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .pill:hover { border-color: var(--rust); color: var(--rust); }
+  .pill.active { background: var(--rust); border-color: var(--rust); color: white; }
+
+  /* Main layout */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 400;
+  }
+
+  .count-badge {
+    font-size: 13px;
+    color: var(--ink-muted);
+    font-weight: 300;
+  }
+
+  /* Recipe grid */
+  .recipe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .recipe-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .recipe-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(28,25,21,0.2);
+  }
+
+  .card-thumb {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 64px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .badge-quick { background: var(--sage-light); color: var(--sage); }
+  .badge-popular { background: var(--rust-light); color: var(--rust); }
+  .badge-vegan { background: #E6F0E8; color: #3A6B40; }
+
+  .card-body {
+    padding: 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-category {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    margin-bottom: 1rem;
+    font-weight: 300;
+    flex: 1;
+  }
+
+  .card-meta {
+    display: flex;
+    gap: 1.25rem;
+    border-top: 1px solid var(--border);
+    padding-top: 0.875rem;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--ink-muted);
+  }
+
+  .meta-item svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+  /* Detail panel */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(28,25,21,0.55);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+
+  .overlay.open { display: flex; }
+
+  .detail-panel {
+    background: var(--warm-white);
+    border-radius: 16px;
+    max-width: 700px;
+    width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideUp 0.25s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .detail-thumb {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 80px;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .detail-content { padding: 2rem; }
+
+  .detail-category {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+    margin-bottom: 6px;
+  }
+
+  .detail-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+  }
+
+  .detail-desc {
+    color: var(--ink-soft);
+    margin-bottom: 1.5rem;
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  .detail-stats {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem 1.25rem;
+    background: var(--cream);
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .stat { text-align: center; }
+  .stat-val { font-size: 18px; font-weight: 500; color: var(--ink); }
+  .stat-key { font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 2px; }
+
+  .detail-section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ingredient-list {
+    list-style: none;
+    margin-bottom: 1.5rem;
+  }
+
+  .ingredient-list li {
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    display: flex;
+    gap: 0.75rem;
+    color: var(--ink-soft);
+  }
+
+  .ingredient-list li::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    background: var(--rust);
+    border-radius: 50%;
+    margin-top: 7px;
+    flex-shrink: 0;
+  }
+
+  .step-list {
+    list-style: none;
+    margin-bottom: 1.5rem;
+  }
+
+  .step-list li {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+  }
+
+  .step-num {
+    background: var(--rust);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 500;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(250,247,242,0.4);
+    background: rgba(28,25,21,0.35);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 1;
+    z-index: 10;
+    transition: background 0.15s;
+  }
+
+  .close-btn:hover { background: rgba(28,25,21,0.6); }
+
+  /* No results */
+  .no-results {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--ink-muted);
+    display: none;
+  }
+
+  .no-results svg { width: 40px; height: 40px; margin-bottom: 1rem; opacity: 0.4; }
+
+  footer {
+    text-align: center;
+    padding: 2.5rem;
+    color: var(--ink-muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    margin-top: 2rem;
+    font-weight: 300;
+  }
+
+  footer span { font-family: 'Playfair Display', serif; font-style: italic; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">The <span>Recipe</span> Table</div>
+  <nav>
+    <ul class="header-nav">
+      <li><a href="#">All Recipes</a></li>
+      <li><a href="#">Seasonal</a></li>
+      <li><a href="#">Collections</a></li>
+    </ul>
+  </nav>
+</header>
+
+<div class="hero">
+  <p class="hero-eyebrow">A curated kitchen</p>
+  <h1>Cook with <em>intention,</em><br>eat with joy</h1>
+  <p>A handpicked collection of recipes for every season, mood, and occasion.</p>
+</div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Search recipes...">
+  </div>
+  <div class="filter-pills">
+    <button class="pill active" data-filter="all">All</button>
+    <button class="pill" data-filter="breakfast">Breakfast</button>
+    <button class="pill" data-filter="lunch">Lunch</button>
+    <button class="pill" data-filter="dinner">Dinner</button>
+    <button class="pill" data-filter="dessert">Dessert</button>
+    <button class="pill" data-filter="vegan">Vegan</button>
+  </div>
+</div>
+
+<main>
+  <div class="section-header">
+    <h2 class="section-title">All recipes</h2>
+    <span class="count-badge" id="countBadge"></span>
+  </div>
+  <div class="recipe-grid" id="grid"></div>
+  <div class="no-results" id="noResults">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 17H5a2 2 0 0 0-2 2"/><path d="M13 17h6"/><circle cx="9" cy="9" r="4"/></svg>
+    <p>No recipes match your search.</p>
+  </div>
+</main>
+
+<div class="overlay" id="overlay">
+  <div class="detail-panel" id="detailPanel">
+    <button class="close-btn" id="closeBtn">×</button>
+    <div class="detail-thumb" id="detailThumb"></div>
+    <div class="detail-content">
+      <p class="detail-category" id="detailCategory"></p>
+      <h2 class="detail-title" id="detailTitle"></h2>
+      <p class="detail-desc" id="detailDesc"></p>
+      <div class="detail-stats" id="detailStats"></div>
+      <h3 class="detail-section-title">Ingredients</h3>
+      <ul class="ingredient-list" id="detailIngredients"></ul>
+      <h3 class="detail-section-title">Method</h3>
+      <ol class="step-list" id="detailSteps"></ol>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>The Recipe Table</span> — made with care
+</footer>
+
+<script>
+const recipes = [
+  {
+    id: 1,
+    title: "Golden turmeric porridge",
+    category: "breakfast",
+    desc: "A warming, anti-inflammatory bowl of oats with golden spices, honey, and toasted seeds.",
+    emoji: "🌾",
+    bg: "#FFF3E0",
+    time: "15 min",
+    serves: "2",
+    difficulty: "Easy",
+    badge: "quick",
+    badgeLabel: "Quick",
+    tags: ["vegan", "breakfast"],
+    ingredients: [
+      "1 cup rolled oats",
+      "2 cups oat milk",
+      "1 tsp turmeric",
+      "½ tsp cinnamon",
+      "Pinch of black pepper",
+      "2 tbsp honey or maple syrup",
+      "2 tbsp pumpkin seeds",
+      "1 tbsp flaxseeds"
+    ],
+    steps: [
+      "Combine oats and oat milk in a saucepan over medium heat.",
+      "Stir in turmeric, cinnamon, and black pepper.",
+      "Cook for 5–7 minutes, stirring frequently, until thick and creamy.",
+      "Spoon into bowls and drizzle with honey. Top with toasted seeds and a pinch of extra cinnamon."
+    ]
+  },
+  {
+    id: 2,
+    title: "Roasted tomato & white bean soup",
+    category: "lunch",
+    desc: "Deep, slow-roasted tomatoes blended with creamy cannellini beans and a swirl of basil oil.",
+    emoji: "🍅",
+    bg: "#FFEBEE",
+    time: "45 min",
+    serves: "4",
+    difficulty: "Easy",
+    badge: "vegan",
+    badgeLabel: "Vegan",
+    tags: ["vegan", "lunch"],
+    ingredients: [
+      "800g cherry tomatoes",
+      "4 garlic cloves",
+      "1 can cannellini beans, drained",
+      "500ml vegetable stock",
+      "3 tbsp olive oil",
+      "1 tsp smoked paprika",
+      "Salt & pepper",
+      "Fresh basil to serve"
+    ],
+    steps: [
+      "Preheat oven to 200°C. Toss tomatoes and garlic in 2 tbsp olive oil. Roast for 25 minutes until caramelised.",
+      "Transfer to a pot. Add beans, stock, and paprika. Simmer for 10 minutes.",
+      "Blend until smooth. Season well.",
+      "Serve drizzled with olive oil and torn basil leaves."
+    ]
+  },
+  {
+    id: 3,
+    title: "Lemon herb roast chicken",
+    category: "dinner",
+    desc: "A classic Sunday roast with crispy skin, fragrant herbs under the breast, and bright lemon.",
+    emoji: "🍋",
+    bg: "#FFFDE7",
+    time: "1 hr 30 min",
+    serves: "4",
+    difficulty: "Medium",
+    badge: "popular",
+    badgeLabel: "Popular",
+    tags: ["dinner"],
+    ingredients: [
+      "1 whole chicken (about 1.8kg)",
+      "1 lemon, halved",
+      "4 garlic cloves",
+      "3 tbsp softened butter",
+      "1 tbsp fresh thyme leaves",
+      "1 tbsp fresh rosemary, chopped",
+      "Salt & black pepper",
+      "Olive oil"
+    ],
+    steps: [
+      "Preheat oven to 200°C. Mix butter with thyme, rosemary, and zest of half the lemon.",
+      "Gently loosen skin over the breast and push herb butter underneath.",
+      "Stuff cavity with lemon halves and garlic. Rub skin with olive oil and season generously.",
+      "Roast for 1 hour 20 minutes or until juices run clear. Rest 15 minutes before carving."
+    ]
+  },
+  {
+    id: 4,
+    title: "Dark chocolate lava cakes",
+    category: "dessert",
+    desc: "Intensely chocolatey individual cakes with a molten, flowing centre. Effortlessly impressive.",
+    emoji: "🍫",
+    bg: "#EFEBE9",
+    time: "25 min",
+    serves: "4",
+    difficulty: "Medium",
+    badge: "popular",
+    badgeLabel: "Popular",
+    tags: ["dessert"],
+    ingredients: [
+      "150g dark chocolate (70%)",
+      "100g unsalted butter",
+      "3 eggs + 3 egg yolks",
+      "80g caster sugar",
+      "2 tbsp plain flour",
+      "Cocoa powder for dusting",
+      "Vanilla ice cream to serve"
+    ],
+    steps: [
+      "Preheat oven to 200°C. Butter 4 ramekins and dust with cocoa.",
+      "Melt chocolate and butter together. Cool slightly.",
+      "Whisk eggs, yolks, and sugar until pale. Fold in chocolate, then flour.",
+      "Pour into ramekins. Bake 10–12 minutes until the edges are set but the centre still wobbles.",
+      "Turn out onto plates and serve immediately with vanilla ice cream."
+    ]
+  },
+  {
+    id: 5,
+    title: "Miso glazed aubergine",
+    category: "dinner",
+    desc: "Silky roasted aubergine coated in a sweet white miso glaze, served over fragrant jasmine rice.",
+    emoji: "🍆",
+    bg: "#EDE7F6",
+    time: "35 min",
+    serves: "2",
+    difficulty: "Easy",
+    badge: "vegan",
+    badgeLabel: "Vegan",
+    tags: ["vegan", "dinner"],
+    ingredients: [
+      "2 aubergines, halved",
+      "3 tbsp white miso",
+      "2 tbsp mirin",
+      "1 tbsp soy sauce",
+      "1 tsp sesame oil",
+      "1 tsp sugar",
+      "Sesame seeds & spring onion to serve",
+      "Cooked jasmine rice"
+    ],
+    steps: [
+      "Score aubergine flesh in a diamond pattern. Brush with oil, place cut-side down. Roast 20 min at 200°C.",
+      "Mix miso, mirin, soy, sesame oil, and sugar into a glaze.",
+      "Flip aubergines, brush generously with glaze. Roast a further 10 minutes until caramelised.",
+      "Serve over rice scattered with sesame seeds and sliced spring onion."
+    ]
+  },
+  {
+    id: 6,
+    title: "Avocado & poached egg toast",
+    category: "breakfast",
+    desc: "Perfectly poached eggs on smashed avocado and sourdough, with chilli flakes and microgreens.",
+    emoji: "🥑",
+    bg: "#E8F5E9",
+    time: "15 min",
+    serves: "2",
+    difficulty: "Easy",
+    badge: "quick",
+    badgeLabel: "Quick",
+    tags: ["breakfast"],
+    ingredients: [
+      "2 ripe avocados",
+      "4 eggs",
+      "2 thick slices sourdough",
+      "1 lemon, juiced",
+      "Chilli flakes",
+      "Salt & pepper",
+      "Microgreens or watercress",
+      "1 tbsp white vinegar"
+    ],
+    steps: [
+      "Toast sourdough until golden. Mash avocado with lemon juice, salt, and pepper.",
+      "Bring a pan of water to a gentle simmer. Add vinegar.",
+      "Create a gentle swirl, crack in each egg, and poach 3 minutes for a runny yolk.",
+      "Spread avocado on toast, top with poached egg, chilli flakes, and microgreens."
+    ]
+  },
+  {
+    id: 7,
+    title: "Classic French onion soup",
+    category: "lunch",
+    desc: "Low-and-slow caramelised onions in a rich beef broth, topped with gruyère-laden croûtons.",
+    emoji: "🧅",
+    bg: "#FFF8E1",
+    time: "1 hr 15 min",
+    serves: "4",
+    difficulty: "Medium",
+    badge: null,
+    tags: ["lunch"],
+    ingredients: [
+      "1.2kg onions, thinly sliced",
+      "50g butter",
+      "2 tbsp olive oil",
+      "200ml dry white wine",
+      "1.2L beef stock",
+      "1 tsp thyme",
+      "4 slices baguette",
+      "120g gruyère, grated"
+    ],
+    steps: [
+      "Cook onions in butter and oil over low heat for 45 minutes, stirring occasionally, until deeply golden.",
+      "Add wine, scraping the pan. Simmer until reduced by half.",
+      "Add stock and thyme. Simmer 20 minutes. Season well.",
+      "Ladle into ovenproof bowls. Top with baguette slices and gruyère. Grill until bubbling and golden."
+    ]
+  },
+  {
+    id: 8,
+    title: "Coconut mango chia pudding",
+    category: "dessert",
+    desc: "A light, tropical no-cook pudding with creamy coconut, fresh mango, and toasted coconut flakes.",
+    emoji: "🥭",
+    bg: "#FFF3E0",
+    time: "10 min + overnight",
+    serves: "4",
+    difficulty: "Easy",
+    badge: "vegan",
+    badgeLabel: "Vegan",
+    tags: ["vegan", "dessert"],
+    ingredients: [
+      "400ml coconut milk",
+      "6 tbsp chia seeds",
+      "2 tbsp maple syrup",
+      "1 tsp vanilla extract",
+      "2 ripe mangoes, diced",
+      "Toasted coconut flakes",
+      "Lime zest"
+    ],
+    steps: [
+      "Whisk together coconut milk, chia seeds, maple syrup, and vanilla.",
+      "Refrigerate overnight or for at least 4 hours until thick and set.",
+      "Spoon into glasses and top with fresh mango, toasted coconut, and lime zest."
+    ]
+  }
+];
+
+let activeFilter = "all";
+let searchQuery = "";
+
+function getBgStyle(recipe) {
+  return `background: ${recipe.bg};`;
+}
+
+function getBadgeHTML(recipe) {
+  if (!recipe.badge) return "";
+  const cls = { quick: "badge-quick", popular: "badge-popular", vegan: "badge-vegan" }[recipe.badge] || "";
+  return `<span class="card-badge ${cls}">${recipe.badgeLabel}</span>`;
+}
+
+function renderGrid() {
+  const grid = document.getElementById("grid");
+  const noResults = document.getElementById("noResults");
+  const count = document.getElementById("countBadge");
+
+  const filtered = recipes.filter(r => {
+    const matchFilter = activeFilter === "all" || r.tags.includes(activeFilter);
+    const q = searchQuery.toLowerCase();
+    const matchSearch = !q || r.title.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q) || r.category.includes(q);
+    return matchFilter && matchSearch;
+  });
+
+  count.textContent = `${filtered.length} recipe${filtered.length !== 1 ? "s" : ""}`;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = "";
+    noResults.style.display = "block";
+    return;
+  }
+
+  noResults.style.display = "none";
+  grid.innerHTML = filtered.map(r => `
+    <div class="recipe-card" onclick="openDetail(${r.id})">
+      <div class="card-thumb" style="${getBgStyle(r)}">
+        <span style="font-size:56px">${r.emoji}</span>
+        ${getBadgeHTML(r)}
+      </div>
+      <div class="card-body">
+        <p class="card-category">${r.category}</p>
+        <h3 class="card-title">${r.title}</h3>
+        <p class="card-desc">${r.desc}</p>
+        <div class="card-meta">
+          <span class="meta-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ${r.time}
+          </span>
+          <span class="meta-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Serves ${r.serves}
+          </span>
+          <span class="meta-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            ${r.difficulty}
+          </span>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function openDetail(id) {
+  const r = recipes.find(x => x.id === id);
+  if (!r) return;
+
+  document.getElementById("detailThumb").style = getBgStyle(r);
+  document.getElementById("detailThumb").innerHTML = `<span style="font-size:72px">${r.emoji}</span>`;
+  document.getElementById("detailCategory").textContent = r.category.toUpperCase();
+  document.getElementById("detailTitle").textContent = r.title;
+  document.getElementById("detailDesc").textContent = r.desc;
+  document.getElementById("detailStats").innerHTML = `
+    <div class="stat"><div class="stat-val">${r.time}</div><div class="stat-key">Time</div></div>
+    <div class="stat"><div class="stat-val">${r.serves}</div><div class="stat-key">Serves</div></div>
+    <div class="stat"><div class="stat-val">${r.difficulty}</div><div class="stat-key">Difficulty</div></div>
+  `;
+  document.getElementById("detailIngredients").innerHTML = r.ingredients.map(i => `<li>${i}</li>`).join("");
+  document.getElementById("detailSteps").innerHTML = r.steps.map((s, i) => `
+    <li><span class="step-num">${i + 1}</span><span>${s}</span></li>
+  `).join("");
+
+  document.getElementById("overlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+document.getElementById("closeBtn").onclick = () => {
+  document.getElementById("overlay").classList.remove("open");
+  document.body.style.overflow = "";
+};
+
+document.getElementById("overlay").onclick = (e) => {
+  if (e.target === document.getElementById("overlay")) {
+    document.getElementById("overlay").classList.remove("open");
+    document.body.style.overflow = "";
+  }
+};
+
+document.querySelectorAll(".pill").forEach(pill => {
+  pill.onclick = () => {
+    document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
+    pill.classList.add("active");
+    activeFilter = pill.dataset.filter;
+    renderGrid();
+  };
+});
+
+document.getElementById("searchInput").oninput = (e) => {
+  searchQuery = e.target.value;
+  renderGrid();
+};
+
+renderGrid();
+</script>
+</body>
+</html>
