@@ -1,448 +1,3044 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>The Recipe Table</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Personal Training">
+<meta name="theme-color" content="#f5f3ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e0e0e" media="(prefers-color-scheme: dark)">
+<title>Personal Training</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  /* ── DARK MODE (default) ── */
   :root {
-    --cream: #FAF7F2; --warm-white: #FDF9F4; --ink: #1C1915; --ink-soft: #4A4540;
-    --ink-muted: #8C8680; --rust: #C15B34; --rust-light: #F2E8E2; --sage: #5A6B52;
-    --sage-light: #E8EDE6; --gold: #B8913A; --border: rgba(28,25,21,0.1);
-    --fitness: #1A6B5A; --fitness-light: #E0F0EC;
+    --bg: #0e0e0e;
+    --surface: #181818;
+    --surface2: #222222;
+    --border: #252525;
+    --border-physio: #1e2a32;
+    --gold: #c8a84b;
+    --gold-light: #e8c96a;
+    --gold-dim: rgba(200,168,75,0.15);
+    --text: #f0ece4;
+    --muted: #888;
+    --cue-text: #ccc;
+    --radius: 14px;
+    --blue: #4a9eca;
+    --blue-dim: rgba(74,158,202,0.15);
+    --header-bg1: #1a1608;
+    --header-bg2: #0e0e0e;
+    --tab-border: #222;
+    --date-chip-bg: #1a2530;
+    --date-chip-color: #6aaccc;
+    --date-chip-border: #1e3040;
+    --note-color: #aac8da;
+    --freq-color: #aac8da;
+    --reps-bg: #1a2530;
+    --physio-hover: #1e3a4a;
+    --footer-color: #444;
+    --info-li-color: #ccc;
   }
-  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); font-size: 15px; line-height: 1.6; -webkit-tap-highlight-color: transparent; }
 
+  /* ── LIGHT MODE ── */
+  html.light {
+    --bg: #f5f3ef;
+    --surface: #ffffff;
+    --surface2: #eeebe6;
+    --border: #e0dbd2;
+    --border-physio: #c8dce8;
+    --gold: #a87c1a;
+    --gold-light: #c8960a;
+    --gold-dim: rgba(168,124,26,0.12);
+    --text: #1a1710;
+    --muted: #888;
+    --cue-text: #444;
+    --blue: #2278a8;
+    --blue-dim: rgba(34,120,168,0.12);
+    --header-bg1: #ede8d8;
+    --header-bg2: #f5f3ef;
+    --tab-border: #ddd8d0;
+    --date-chip-bg: #dceef8;
+    --date-chip-color: #1d6a96;
+    --date-chip-border: #b8d8ec;
+    --note-color: #1d5a7a;
+    --freq-color: #1d5a7a;
+    --reps-bg: #dceef8;
+    --physio-hover: #b8d8ec;
+    --footer-color: #bbb;
+    --info-li-color: #555;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+    transition: background 0.25s, color 0.25s;
+  }
+
+  /* HEADER */
   header {
-    background: var(--ink); color: var(--cream);
-    padding: 0 1.25rem 0 1.5rem;
-    display: flex; align-items: center; justify-content: space-between;
-    height: 58px; position: sticky; top: 0; z-index: 100;
+    background: linear-gradient(160deg, var(--header-bg1) 0%, var(--header-bg2) 60%);
+    padding: 48px 20px 36px;
+    text-align: center;
+    border-bottom: 1px solid var(--tab-border);
+    position: relative;
+    overflow: hidden;
   }
-  .logo { font-family: 'Playfair Display', serif; font-size: 20px; letter-spacing: 0.02em; color: var(--cream); }
-  .logo span { color: var(--gold); font-style: italic; }
-  .header-right { display: flex; align-items: center; gap: 0.75rem; }
-  .nav-links { display: flex; gap: 1.5rem; list-style: none; }
-  .nav-links a { color: rgba(250,247,242,0.65); text-decoration: none; font-size: 12px; font-weight: 400; letter-spacing: 0.05em; text-transform: uppercase; }
-  @media (max-width: 600px) { .nav-links { display: none; } }
-
-  .lang-toggle { display: flex; gap: 2px; background: rgba(255,255,255,0.1); border-radius: 6px; padding: 3px; }
-  .lang-btn { padding: 4px 9px; border-radius: 4px; border: none; background: transparent; color: rgba(250,247,242,0.6); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; letter-spacing: 0.04em; transition: all 0.15s; }
-  .lang-btn.active { background: var(--gold); color: var(--ink); }
-
-  .hero { background: var(--ink); color: var(--cream); padding: clamp(2.5rem,8vw,5rem) 1.5rem clamp(2rem,6vw,4rem); text-align: center; }
-  .hero-eyebrow { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; font-weight: 500; }
-  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(28px,7vw,60px); font-weight: 400; line-height: 1.1; margin-bottom: 1rem; }
-  .hero h1 em { font-style: italic; color: var(--gold); }
-  .hero p { color: rgba(250,247,242,0.6); font-size: clamp(14px,3.5vw,16px); max-width: 440px; margin: 0 auto; font-weight: 300; }
-
-  .controls { background: var(--warm-white); border-bottom: 1px solid var(--border); padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
-  .search-wrap { position: relative; width: 100%; }
-  .search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--ink-muted); pointer-events: none; }
-  #searchInput { width: 100%; padding: 10px 12px 10px 34px; border: 1px solid var(--border); border-radius: 8px; background: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--ink); outline: none; transition: border-color 0.2s; -webkit-appearance: none; }
-  #searchInput:focus { border-color: var(--rust); }
-  #searchInput::placeholder { color: var(--ink-muted); }
-  .filter-pills { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-  .filter-pills::-webkit-scrollbar { display: none; }
-  .pill { padding: 7px 15px; border-radius: 999px; border: 1px solid var(--border); background: transparent; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink-soft); cursor: pointer; transition: all 0.15s; white-space: nowrap; flex-shrink: 0; }
-  .pill:hover { border-color: var(--rust); color: var(--rust); }
-  .pill.active { background: var(--rust); border-color: var(--rust); color: white; }
-  .pill[data-filter="fitness"].active { background: var(--fitness); border-color: var(--fitness); }
-
-  main { max-width: 1200px; margin: 0 auto; padding: clamp(1.5rem,4vw,3rem) 1.25rem; }
-  .section-header { display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 1.5rem; }
-  .section-title { font-family: 'Playfair Display', serif; font-size: clamp(20px,4vw,26px); font-weight: 400; }
-  .count-badge { font-size: 13px; color: var(--ink-muted); font-weight: 300; }
-
-  .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px,100%),1fr)); gap: 1rem; }
-  @media (max-width: 480px) { .recipe-grid { grid-template-columns: 1fr; } }
-
-  .recipe-card { background: var(--warm-white); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.2s, border-color 0.2s; display: flex; flex-direction: column; }
-  @media (hover: hover) { .recipe-card:hover { transform: translateY(-3px); border-color: rgba(28,25,21,0.2); } }
-  @media (hover: none) { .recipe-card:active { opacity: 0.82; } }
-
-  .card-thumb { height: 155px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-  .card-badge { position: absolute; top: 10px; right: 10px; padding: 3px 9px; border-radius: 999px; font-size: 10px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
-  .badge-quick { background: var(--sage-light); color: var(--sage); }
-  .badge-popular { background: var(--rust-light); color: var(--rust); }
-  .badge-vegan { background: #E6F0E8; color: #3A6B40; }
-  .badge-fitness { background: var(--fitness-light); color: var(--fitness); }
-
-  .card-body { padding: 1rem 1.1rem; flex: 1; display: flex; flex-direction: column; }
-  .card-category { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-muted); margin-bottom: 4px; font-weight: 500; }
-  .card-title { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 600; line-height: 1.3; margin-bottom: 6px; color: var(--ink); }
-  .card-desc { font-size: 13px; color: var(--ink-soft); line-height: 1.5; margin-bottom: 0.875rem; font-weight: 300; flex: 1; }
-  .macro-row { display: flex; gap: 6px; margin-bottom: 0.6rem; flex-wrap: wrap; }
-  .macro-pill { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 500; background: var(--fitness-light); color: var(--fitness); }
-  .card-meta { display: flex; gap: 1rem; border-top: 1px solid var(--border); padding-top: 0.75rem; flex-wrap: wrap; }
-  .meta-item { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--ink-muted); }
-  .meta-item svg { width: 12px; height: 12px; flex-shrink: 0; }
-
-  .overlay { display: none; position: fixed; inset: 0; background: rgba(28,25,21,0.6); z-index: 200; overflow-y: auto; }
-  .overlay.open { display: block; }
-  .detail-panel { background: var(--warm-white); max-width: 680px; min-height: 100dvh; position: relative; animation: slideUp 0.25s ease; }
-  @media (min-width: 720px) {
-    .overlay { display: none; align-items: center; justify-content: center; padding: 1.5rem; }
-    .overlay.open { display: flex; }
-    .detail-panel { min-height: unset; max-height: 88vh; overflow-y: auto; border-radius: 16px; margin: auto; }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(200,168,75,0.12) 0%, transparent 70%);
+    pointer-events: none;
   }
-  @keyframes slideUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+  .header-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(44px, 10vw, 72px);
+    letter-spacing: 3px;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  header h1 span { color: var(--gold); }
+  .header-sub {
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    margin-top: 10px;
+  }
 
-  .detail-thumb { height: 195px; display: flex; align-items: center; justify-content: center; }
-  @media (min-width: 720px) { .detail-thumb { border-radius: 16px 16px 0 0; } }
-  .detail-content { padding: 1.5rem; }
-  .detail-category { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-muted); margin-bottom: 5px; }
-  .detail-title { font-family: 'Playfair Display', serif; font-size: clamp(22px,5vw,28px); font-weight: 600; margin-bottom: 0.6rem; line-height: 1.2; }
-  .detail-desc { color: var(--ink-soft); margin-bottom: 1.25rem; font-weight: 300; line-height: 1.7; font-size: 14px; }
-  .detail-stats { display: flex; gap: 1rem; padding: 0.875rem 1rem; background: var(--cream); border-radius: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
-  .stat { text-align: center; min-width: 58px; }
-  .stat-val { font-size: 15px; font-weight: 500; color: var(--ink); }
-  .stat-key { font-size: 10px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 2px; }
-  .detail-macros { display: flex; gap: 7px; margin-bottom: 1.25rem; flex-wrap: wrap; }
-  .detail-macro { padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; background: var(--fitness-light); color: var(--fitness); }
-  .detail-section-title { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 600; margin-bottom: 0.6rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border); }
-  .ingredient-list { list-style: none; margin-bottom: 1.25rem; }
-  .ingredient-list li { padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 14px; display: flex; gap: 0.75rem; color: var(--ink-soft); }
-  .ingredient-list li::before { content: ''; width: 5px; height: 5px; background: var(--rust); border-radius: 50%; margin-top: 8px; flex-shrink: 0; }
-  .step-list { list-style: none; margin-bottom: 1.25rem; padding-bottom: env(safe-area-inset-bottom, 1rem); }
-  .step-list li { display: flex; gap: 0.875rem; margin-bottom: 0.875rem; font-size: 14px; color: var(--ink-soft); line-height: 1.65; }
-  .step-num { background: var(--rust); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; flex-shrink: 0; margin-top: 1px; }
-  .close-btn { position: absolute; top: 1rem; right: 1rem; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(250,247,242,0.4); background: rgba(28,25,21,0.4); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; line-height: 1; z-index: 10; transition: background 0.15s; }
-  .close-btn:hover { background: rgba(28,25,21,0.65); }
+  /* NAV TABS */
+  .tab-bar {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--tab-border);
+    scrollbar-width: none;
+    align-items: center;
+    transition: background 0.25s;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0;
+    background: var(--surface);
+    color: var(--muted);
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    padding: 8px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn.active {
+    background: var(--gold);
+    color: #fff;
+    border-color: var(--gold);
+    font-weight: 600;
+  }
+  html.light .tab-btn.active { color: #fff; }
+  .tab-btn:not(.active):hover {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
 
-  .no-results { text-align: center; padding: 4rem 1rem; color: var(--ink-muted); display: none; }
-  .no-results svg { width: 36px; height: 36px; margin-bottom: 0.875rem; opacity: 0.35; display: block; margin-left: auto; margin-right: auto; }
-  footer { text-align: center; padding: 2rem 1.25rem; color: var(--ink-muted); font-size: 13px; border-top: 1px solid var(--border); margin-top: 1.5rem; font-weight: 300; }
-  footer em { font-family: 'Playfair Display', serif; font-style: italic; }
+  /* THEME TOGGLE */
+  .theme-toggle {
+    margin-left: auto;
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    padding: 7px 14px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1;
+  }
+  .theme-toggle:hover { border-color: var(--gold); }
+
+  /* PAGES */
+  .page { display: none; padding: 20px 16px 40px; max-width: 600px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* SECTION CARD */
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin: 28px 0 12px;
+  }
+  .section-title:first-child { margin-top: 8px; }
+
+  .exercise-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s, background 0.25s;
+  }
+  .exercise-card:hover { border-color: var(--gold-dim); }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    cursor: pointer;
+    user-select: none;
+    gap: 12px;
+  }
+  .card-header-left { flex: 1; }
+  .exercise-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .exercise-sets {
+    display: inline-block;
+    margin-top: 5px;
+    background: rgba(200,168,75,0.15);
+    color: var(--gold);
+    border-radius: 6px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .chevron {
+    color: var(--muted);
+    font-size: 18px;
+    transition: transform 0.25s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .exercise-card.open .chevron { transform: rotate(180deg); color: var(--gold); }
+
+  .card-body {
+    display: none;
+    padding: 0 18px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .exercise-card.open .card-body { display: block; }
+
+  .cue-list {
+    list-style: none;
+    padding-top: 12px;
+  }
+  .cue-list li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 5px 0;
+    font-size: 14px;
+    color: var(--cue-text);
+    line-height: 1.5;
+  }
+  .cue-list li::before {
+    content: '▸';
+    color: var(--gold);
+    font-size: 11px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  /* WARMUP PAGE */
+  .info-block {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 18px;
+    margin-bottom: 12px;
+    transition: background 0.25s;
+  }
+  .info-block h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .info-block ul { list-style: none; }
+  .info-block ul li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 5px 0;
+    font-size: 14px;
+    color: var(--info-li-color);
+    line-height: 1.5;
+  }
+  .info-block ul li::before {
+    content: '▸';
+    color: var(--gold);
+    font-size: 11px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  .highlight-row {
+    background: linear-gradient(135deg, rgba(200,168,75,0.08), transparent);
+    border: 1px solid rgba(200,168,75,0.2);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+  .highlight-row .icon { font-size: 22px; }
+  .highlight-row .text { font-size: 14px; color: var(--text); }
+  .highlight-row .text strong { color: var(--gold); display: block; font-size: 13px; margin-bottom: 2px; }
+
+  footer {
+    text-align: center;
+    padding: 24px;
+    color: var(--footer-color);
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ══════════════════════════════════════
+     MOBILE UX IMPROVEMENTS
+  ══════════════════════════════════════ */
+
+  /* Larger tap targets on mobile */
+  @media (max-width: 600px) {
+    /* Reduce header size on mobile */
+    header { padding: 28px 16px 20px; }
+    header h1 { font-size: 38px; }
+    .header-sub { font-size: 12px; margin-top: 6px; }
+
+    /* Tighter nav */
+    .tab-bar { padding: 8px 12px; gap: 6px; }
+    .tab-btn { padding: 7px 13px; font-size: 12px; }
+    .theme-toggle { padding: 6px 11px; font-size: 15px; }
+
+    /* Progress bar closer to content */
+    .progress-bar-wrap { padding: 0 12px 0; }
+
+    /* Cards — bigger tap target, less padding */
+    .card-header { padding: 14px 14px; }
+    .exercise-name { font-size: 14px; }
+    .card-body { padding: 0 14px 14px; }
+    .cue-list li { font-size: 13px; padding: 4px 0; }
+
+    /* Info blocks */
+    .info-block { padding: 14px; }
+    .info-block ul li { font-size: 13px; }
+
+    /* Section titles */
+    .section-title { margin: 20px 0 10px; font-size: 12px; }
+    .physio-section-title { margin: 20px 0 10px; font-size: 12px; }
+
+    /* Page padding */
+    .page { padding: 14px 12px 80px; }
+
+    /* Calendar grid — tighter */
+    .cal-grid { gap: 3px; }
+    .cal-day { border-radius: 6px; font-size: 12px; }
+    .cal-day-name { font-size: 10px; padding-bottom: 6px; }
+    .cal-month-label { font-size: 18px; }
+    .cal-nav { width: 30px; height: 30px; font-size: 14px; }
+
+    /* Stats row */
+    .stat-num { font-size: 24px; }
+    .stat-label { font-size: 10px; }
+
+    /* Log type buttons — 2 per row on small screens */
+    .log-row { gap: 6px; }
+    .log-type-btn { font-size: 11px; padding: 8px 6px; }
+
+    /* Log save button — bigger */
+    .log-save-btn { padding: 15px; font-size: 16px; border-radius: 12px; }
+
+    /* Session list */
+    .session-item { padding: 10px 12px; }
+    .session-type { font-size: 13px; }
+    .session-date { font-size: 11px; }
+
+    /* Auth box */
+    .auth-box { padding: 28px 20px; }
+    .auth-logo { font-size: 26px; }
+
+    /* User pill — shorter on mobile */
+    .user-pill { padding: 5px 8px 5px 6px; font-size: 11px; }
+    #userEmail { max-width: 60px; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Checkboxes — bigger touch target */
+    .cb-wrap { width: 36px; height: 36px; }
+    .ex-checkbox { width: 24px; height: 24px; }
+  }
+
+  /* Bottom safe area for iPhone home bar */
+  @supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .page { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+    .tab-bar { padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
+  }
+
+  /* Active state feedback for touch */
+  .exercise-card:active, .physio-card:active { opacity: 0.85; }
+  .tab-btn:active { transform: scale(0.96); }
+  .log-save-btn:active { transform: scale(0.98); }
+  .log-type-btn:active { transform: scale(0.95); }
+  .cal-day:not(.cal-empty):active { transform: scale(0.92); }
+  .session-del:active { transform: scale(0.95); }
+
+  /* Smooth card open/close animation */
+  .card-body {
+    animation: none;
+  }
+  .exercise-card.open .card-body,
+  .physio-card.open .card-body {
+    animation: slideDown 0.2s ease;
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Prevent text selection on tap */
+  .tab-btn, .log-type-btn, .log-save-btn, .cal-day,
+  .card-header, .exercise-card, .physio-card {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+
+  /* Sticky progress bar with backdrop blur */
+  .progress-bar-wrap {
+    position: sticky;
+    top: 53px;
+    z-index: 99;
+    background: var(--bg);
+    padding: 8px 16px 4px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: background 0.25s;
+  }
+
+  /* PHYSIO STYLES */
+  .physio-badge {
+    display: inline-block;
+    background: var(--blue-dim);
+    color: var(--blue);
+    border-radius: 6px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-top: 5px;
+  }
+  .physio-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-physio);
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s, background 0.25s;
+  }
+  .physio-card:hover { border-color: var(--physio-hover); }
+  .physio-card .card-header { cursor: pointer; user-select: none; }
+  .physio-card.open .chevron { transform: rotate(180deg); color: var(--blue); }
+  .physio-card .card-body { display: none; padding: 0 18px 16px; border-top: 1px solid var(--border-physio); }
+  .physio-card.open .card-body { display: block; }
+  .physio-card .exercise-name { color: var(--text); }
+
+  .physio-section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--blue);
+    text-transform: uppercase;
+    margin: 28px 0 12px;
+  }
+  .physio-section-title:first-child { margin-top: 8px; }
+
+  .date-chip {
+    display: inline-block;
+    background: var(--date-chip-bg);
+    color: var(--date-chip-color);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+    border: 1px solid var(--date-chip-border);
+    transition: background 0.25s;
+  }
+  .note-box {
+    background: var(--blue-dim);
+    border-left: 3px solid var(--blue);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--note-color);
+    margin: 10px 0 4px;
+    line-height: 1.5;
+  }
+  .reps-tag {
+    display: inline-block;
+    margin-top: 8px;
+    background: var(--reps-bg);
+    color: var(--blue);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .freq-banner {
+    background: linear-gradient(135deg, var(--blue-dim), transparent);
+    border: 1px solid rgba(74,158,202,0.25);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--freq-color);
+    margin-bottom: 16px;
+    transition: background 0.25s;
+  }
+  .freq-banner strong { color: var(--blue); }
+
+  /* CHECKBOX & PROGRESS */
+  .cb-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+  }
+  .ex-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.18s;
+    background: var(--surface2);
+    flex-shrink: 0;
+    position: relative;
+  }
+  .ex-checkbox:checked {
+    background: #3dba6e;
+    border-color: #3dba6e;
+  }
+  .ex-checkbox:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .exercise-card.done, .physio-card.done {
+    opacity: 0.55;
+  }
+  .exercise-card.done .exercise-name,
+  .physio-card.done .exercise-name {
+    text-decoration: line-through;
+    text-decoration-color: #3dba6e;
+  }
+
+  .progress-bar-wrap {
+    padding: 0 16px 2px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .progress-track {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3dba6e, #5dd98a);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+  .progress-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .progress-label .done-count { color: #3dba6e; font-weight: 600; }
+  .reset-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .reset-btn:hover { border-color: #e05555; color: #e05555; }
+
+  /* ── AUTH OVERLAY ── */
+  .auth-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .auth-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px 28px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  }
+  .auth-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 3px;
+    color: var(--text);
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .auth-logo span { color: var(--gold); }
+  .auth-sub {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    margin-bottom: 28px;
+  }
+  .auth-tabs {
+    display: flex;
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 3px;
+    margin-bottom: 22px;
+  }
+  .auth-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    padding: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .auth-tab.active {
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 600;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  .auth-field { margin-bottom: 14px; }
+  .auth-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .auth-field input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .auth-field input:focus { border-color: var(--gold); }
+  .auth-submit {
+    width: 100%;
+    background: var(--gold);
+    border: none;
+    border-radius: 12px;
+    padding: 13px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: opacity 0.2s;
+  }
+  .auth-submit:hover { opacity: 0.88; }
+  .auth-submit:disabled { opacity: 0.5; cursor: default; }
+  .auth-error {
+    background: rgba(224,85,85,0.12);
+    border: 1px solid rgba(224,85,85,0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #e05555;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .auth-success {
+    background: rgba(61,186,110,0.12);
+    border: 1px solid rgba(61,186,110,0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #3dba6e;
+    margin-bottom: 14px;
+    display: none;
+    text-align: center;
+  }
+  .user-pill {
+    margin-left: auto;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    padding: 5px 12px 5px 8px;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .user-pill:hover { border-color: #e05555; color: #e05555; }
+  .user-avatar {
+    width: 22px; height: 22px;
+    background: var(--gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  /* ── CALENDAR ── */
+  .cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .cal-month-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+  .cal-nav {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    width: 34px; height: 34px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .cal-nav:hover { border-color: var(--gold); color: var(--gold); }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 20px;
+  }
+  .cal-day-name {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 1px;
+    padding: 4px 0 8px;
+    text-transform: uppercase;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    gap: 2px;
+    user-select: none;
+  }
+  .cal-day:hover:not(.cal-empty) { border-color: var(--gold); }
+  .cal-day.cal-empty { background: transparent; border-color: transparent; cursor: default; }
+  .cal-day.cal-today { border-color: var(--gold); color: var(--gold); font-weight: 700; }
+  .cal-day.has-session { background: #3dba6e; border-color: #3dba6e; color: #fff; }
+  .cal-day.has-session:hover { background: #35a860; }
+  .cal-day .cal-dots {
+    display: flex; gap: 2px; flex-wrap: wrap; justify-content: center;
+    max-width: 90%;
+  }
+  .cal-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.7);
+    flex-shrink: 0;
+  }
+  html:not(.light) .cal-day.has-session .cal-dot { background: rgba(255,255,255,0.8); }
+  html.light .cal-day.has-session .cal-dot { background: rgba(255,255,255,0.9); }
+
+  .cal-legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .cal-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .cal-legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .log-session-area {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 20px;
+  }
+  .log-session-area h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .log-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .log-type-btn {
+    flex: 1;
+    min-width: 100px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .log-type-btn.selected { background: var(--gold); border-color: var(--gold); color: #fff; font-weight: 600; }
+  .log-type-btn:hover:not(.selected) { border-color: var(--gold); color: var(--gold); }
+
+
+  .log-save-btn {
+    width: 100%;
+    background: #3dba6e;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 4px;
+  }
+  .log-save-btn:hover { background: #35a860; }
+  .log-save-btn:disabled { background: var(--border); color: var(--muted); cursor: default; }
+
+  .sessions-list { }
+  .sessions-list h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .session-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .session-icon { font-size: 20px; flex-shrink: 0; }
+  .session-info { flex: 1; }
+  .session-date { font-size: 12px; color: var(--muted); }
+  .session-type { font-size: 14px; font-weight: 600; color: var(--text); }
+  .session-del {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .session-del:hover { border-color: #e05555; color: #e05555; }
+  .no-sessions {
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    padding: 24px 0;
+  }
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 10px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">The <span>Recipe</span> Table</div>
-  <div class="header-right">
-    <nav><ul class="nav-links"><li><a href="#" data-i18n="nav_all">All Recipes</a></li><li><a href="#" data-i18n="nav_fitness">Fitness</a></li></ul></nav>
-    <div class="lang-toggle">
-      <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
-      <button class="lang-btn" id="btnFI" onclick="setLang('fi')">FI</button>
+<!-- AUTH OVERLAY -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-logo">PERSONAL <span>TRAINING</span></div>
+    <div class="auth-sub">Sign in to sync across all devices</div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+    </div>
+
+    <div id="authError" class="auth-error"></div>
+    <div id="authSuccess" class="auth-success"></div>
+
+    <div id="loginForm">
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="your@email.com" />
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" />
+      </div>
+      <button class="auth-submit" onclick="doLogin()">Sign In →</button>
+    </div>
+
+    <div id="registerForm" style="display:none">
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="regEmail" placeholder="your@email.com" />
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="regPassword" placeholder="Min. 6 characters" />
+      </div>
+      <button class="auth-submit" onclick="doRegister()">Create Account →</button>
     </div>
   </div>
+</div>
+
+<header>
+  <h1>PERSONAL<br><span>TRAINING</span></h1>
+  <div class="header-sub">3 ohjelmaa · Liikkuvuus · Venyttely</div>
 </header>
 
-<div class="hero">
-  <p class="hero-eyebrow" data-i18n="hero_eyebrow">A curated kitchen</p>
-  <h1 data-i18n-html="hero_title">Cook with <em>intention,</em><br>eat with joy</h1>
-  <p data-i18n="hero_sub">A handpicked collection of recipes for every season, mood, and occasion.</p>
+<nav class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('warmup')">🔥 Alkulämmittely</button>
+  <button class="tab-btn" onclick="showTab('prog1')">Ohjelma 1</button>
+  <button class="tab-btn" onclick="showTab('prog2')">Ohjelma 2</button>
+  <button class="tab-btn" onclick="showTab('prog3')">Ohjelma 3</button>
+  <button class="tab-btn" onclick="showTab('physio')" id="physio-tab">🏥 Fysioterapia</button>
+  <button class="tab-btn" onclick="showTab('calendar')">📅 Kalenteri</button>
+  <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">🌙</button>
+  <button class="user-pill" id="userPill" onclick="doLogout()" style="display:none" title="Sign out">
+    <div class="user-avatar" id="userAvatar">?</div>
+    <span id="userEmail">...</span>
+    · Sign out
+  </button>
+</nav>
+
+<div class="progress-bar-wrap" id="progressWrap">
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-label">
+    <span><span class="done-count" id="progressDone">0</span> / <span id="progressTotal">0</span> tehty</span>
+    <button class="reset-btn" onclick="resetProgress()">Nollaa</button>
+  </div>
 </div>
 
-<div class="controls">
-  <div class="search-wrap">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input type="search" id="searchInput" autocomplete="off" data-i18n-placeholder="search_placeholder" placeholder="Search recipes...">
+<!-- WARMUP PAGE -->
+<div id="warmup" class="page active">
+
+  <div class="highlight-row">
+    <div class="icon">🏃</div>
+    <div class="text"><strong>Juoksumatto</strong>5–10 min treenin alkuun ja loppuun</div>
   </div>
-  <div class="filter-pills">
-    <button class="pill active" data-filter="all" data-i18n="filter_all">All</button>
-    <button class="pill" data-filter="breakfast" data-i18n="filter_breakfast">Breakfast</button>
-    <button class="pill" data-filter="lunch" data-i18n="filter_lunch">Lunch</button>
-    <button class="pill" data-filter="dinner" data-i18n="filter_dinner">Dinner</button>
-    <button class="pill" data-filter="dessert" data-i18n="filter_dessert">Dessert</button>
-    <button class="pill" data-filter="vegan" data-i18n="filter_vegan">Vegan</button>
-    <button class="pill" data-filter="fitness" data-i18n="filter_fitness">Fitness</button>
+
+  <div class="section-title">Kepillä</div>
+  <div class="info-block">
+    <ul>
+      <li>Kepin pyöritys selän taakse</li>
+      <li>Kepin pyöritys vartalon ympäri</li>
+      <li>Kepin kierto etunojassa kohti lattiaa (niskan takana)</li>
+    </ul>
+  </div>
+
+  <div class="section-title">Liikkuvuus</div>
+  <div class="info-block">
+    <ul>
+      <li>Tuulimylly → kosketa vastakkainen käsi jalkapöytään ja toinen käsi kiertyy ylös kohti kattoa</li>
+      <li>Vatsallaan (kädet auki sivulle) → skorpioni – kierrä jalka vartalon yli kohti lattiaa</li>
+      <li>Lonkankoukistaja venytys ja takareiden venytys (polviseisonta) → tee liikettä vuorotellen lonkalle muutama pumppaus ja takareidelle lyhyt venytys</li>
+      <li>Lankku → askel eteen → kierrä käsi kohti kattoa</li>
+    </ul>
+  </div>
+
+  <div class="section-title">Venyttelyt</div>
+  <div class="info-block">
+    <ul>
+      <li>Takareisi</li>
+      <li>Etureisi</li>
+      <li>Selän pyöristys alas</li>
+      <li>Rintarangan venytys</li>
+    </ul>
   </div>
 </div>
 
-<main>
-  <div class="section-header">
-    <h2 class="section-title" data-i18n="section_title">All recipes</h2>
-    <span class="count-badge" id="countBadge"></span>
-  </div>
-  <div class="recipe-grid" id="grid"></div>
-  <div class="no-results" id="noResults">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <p data-i18n="no_results">No recipes match your search.</p>
-  </div>
-</main>
+<!-- PROGRAM 1 -->
+<div id="prog1" class="page">
 
-<div class="overlay" id="overlay">
-  <div class="detail-panel" id="detailPanel">
-    <button class="close-btn" id="closeBtn">&#xd7;</button>
-    <div class="detail-thumb" id="detailThumb"></div>
-    <div class="detail-content">
-      <p class="detail-category" id="detailCategory"></p>
-      <h2 class="detail-title" id="detailTitle"></h2>
-      <p class="detail-desc" id="detailDesc"></p>
-      <div class="detail-stats" id="detailStats"></div>
-      <div class="detail-macros" id="detailMacros"></div>
-      <h3 class="detail-section-title" data-i18n="ingredients">Ingredients</h3>
-      <ul class="ingredient-list" id="detailIngredients"></ul>
-      <h3 class="detail-section-title" data-i18n="method">Method</h3>
-      <ol class="step-list" id="detailSteps"></ol>
+  <div class="section-title">Jalat & Selkä</div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Maastaveto (trap bar)</div>
+        <span class="exercise-sets">3 × 8–10 · 40–70 kg</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Lantion levyinen haara jaloissa → etunoja asento</li>
+        <li>Tukeva ote kahvoista, hyvä ryhti, hartiat taakse ja aktiivinen lapatuki</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Yläselkä</div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Tuettu soutu laitteessa</div>
+        <span class="exercise-sets">3 × 8–10 · 10–15 kg</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Vapauta laite telineestä</li>
+        <li>Venytä hartiat ja yläselkä ala-asennossa</li>
+        <li>Kevennä veto vaiheessa rintakehää irti penkistä → purista lavat yhteen</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Rinta</div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Penkkipunnerrus</div>
+        <span class="exercise-sets">3 × 6–10 · 50–65 kg</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Rintakehä auki – lavat yhteen – alaselän alle kaari</li>
+        <li>Lantiosta voimaa – paina kantapäitä lattiaan ja polvi-varvaslinja hieman auki</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Jalat</div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Askelkyykky tangolla tai käsipainoilla</div>
+        <span class="exercise-sets">3 × 8+8 · tanko / 12.5–15 kg</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Askel taakse – keskivartalo tiukkana → aktiivinen keskivartalo ja hyvä ryhti</li>
+        <li>Hieman lantiota leveämpi haara jaloissa</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Hauikset & Ojentajat</div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Hauiskääntö scott-tangolla</div>
+        <span class="exercise-sets">3 × 8–10 · 15 kg</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Säädä penkin korkeus → liike lähtee alhaalta kohti hartioita/rintakehää</li>
+        <li>Vartalon ja tangon väliin jää ylä-asennossa ilmaa</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Ranskalainen punnerrus scott-tangolla</div>
+        <span class="exercise-sets">3 × 8–10 · 10 kg</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Noin hartioiden levyinen ote (mutkien kohdalta)</li>
+        <li>Koukistus kohti otsaa / pään yli</li>
+        <li>Kyynärpäät pysyy paikoillaan</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Vatsat</div>
+  <div class="info-block">
+    <ul>
+      <li>2–3 kierrosta / 10–15 toistoa per kylki</li>
+      <li>Vartalon kierto levykiekolla tai kahvakuulalla</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PROGRAM 2 -->
+<div id="prog2" class="page">
+
+  <div class="section-title">Jalat</div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Hack kyykky</div>
+        <span class="exercise-sets">3 × 8–10 · 20–40 kg + laite 40 kg</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Lantiota hieman leveämpi haara jaloissa</li>
+        <li>Liimaa selkä kiinni penkkiin ja varpaat n. ylimpien karhennus tarrojen kohdalle</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Yläselkä</div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Ylätalja (musta kahva)</div>
+        <span class="exercise-sets">3 × 8–10 · 54 kg</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Veto leuan alapuolelle kohti rintaa</li>
+        <li>Kyynärpäät kohti lattiaa – pieni pysäytys alhaalla</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Rinta</div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Vinopenkkipunnerrus käsipainoilla</div>
+        <span class="exercise-sets">3 × 10 · 17.5–20 kg</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Ranteet tiukkana, ala-asennossa kyynärpäät ovat hieman hartioita alempana</li>
+        <li>Liike sivulta ylös rintakehän linjaan → painojen väliin jää ilmaa</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Selkä</div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Yhden käden kulmasoutu käsipainolla</div>
+        <span class="exercise-sets">3 × 8–10 · 15–17.5 kg</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Etunoja penkkiä vasten – keskivartalo tiukkana</li>
+        <li>Venytä hartia alas → soutu kyynärpää edellä kohti kylkeä</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Jalat – Etureidet & Takareidet</div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Polven ojennus laitteessa</div>
+        <span class="exercise-sets">3 × 8–10 · 15+15 kg</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Säädä penkin selkänoja</li>
+        <li>Tee liike ensin toisella jalalla ja sitten toisella</li>
+        <li>Ojennus vaiheessa ylhäällä pieni koukku polvessa</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Polven koukistus maaten</div>
+        <span class="exercise-sets">3 × 10 · 35–40 kg</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Maaten: säädä nilkkatuki, paina lantio penkkiä vasten ja aktivoi keskivartalo</li>
+        <li>Liike kantapäät edellä kohti pakaroita</li>
+        <li>Nilkat rentoina</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Vatsat</div>
+  <div class="info-block">
+    <ul>
+      <li>2–3 kierrosta / 1 min tai 10+10</li>
+      <li>Lankku pito</li>
+      <li>Selin: Linkkuveitsi (vastakkainen käsi + jalka ristiin ylös)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PROGRAM 3 -->
+<div id="prog3" class="page">
+
+  <div class="section-title">Yläselkä</div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Leuanveto</div>
+        <span class="exercise-sets">3 × max</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Lämmittely – niin monta toistoa kun menee</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Pendlay row tangolla</div>
+        <span class="exercise-sets">3 × 8 · 50 kg</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Hartioita leveämpi ote tangosta</li>
+        <li>Ojenna lantio taakse – pieni pehmeys polvissa</li>
+        <li>Napakka veto rintakehän ja navan väliin → pysäytä alhaalla</li>
+        <li>Kyynärpäät aukeaa sivulle veto vaiheessa</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Jalat</div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Jalkaprässi yhdellä jalalla</div>
+        <span class="exercise-sets">3 × 8–12 · 50 kg / puoli</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Aseta jalka noin lantio linjaan → käännä hieman varpaita auki</li>
+        <li>Alaselkä tukevasti penkissä</li>
+        <li>Pieni pehmeys polvessa yläasennossa</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Rinta</div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Ristikkäistalja punnerrus</div>
+        <span class="exercise-sets">3 × 10–12 · 23 kg</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Aseta taljan vaijerit n. 10 kohdalle</li>
+        <li>Etunoja – askel eteen → keskivartalo tiukkana</li>
+        <li>N. hartia linjasta punnerrus alas viistoon</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Takareidet & Pohkeet</div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Romanialainen maastaveto käsipainoilla</div>
+        <span class="exercise-sets">3 × 8–12 · 17.5–20 kg</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Lantiokori työntyy taakse → pieni pehmeys polvissa</li>
+        <li>Painot kulkee läheltä jalkoja polven alapuolelle</li>
+        <li>Ojennus ylös – hartiat taakse</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Pohkeet laitteessa</div>
+        <span class="exercise-sets">3 × 10–15</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Aseta jalkaterä laudan päälle → kantapää venyy alas</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Core</div>
+
+  <div class="exercise-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Vartalon kierto taljassa kahvalla</div>
+        <span class="exercise-sets">3 × 12+12 · 15 kg</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Säädä taljan vaijeri n. hartioiden korkeudelle</li>
+        <li>Astu taljasta riittävän kauas</li>
+        <li>Keskivartalo tiukkana → lantio pysyy paikallaan</li>
+      </ul>
     </div>
   </div>
 </div>
 
-<footer><em>The Recipe Table</em> &mdash; <span data-i18n="footer_made">made with care</span></footer>
+<!-- CALENDAR PAGE -->
+<div id="calendar" class="page">
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-num" id="statTotal">0</div>
+      <div class="stat-label">Yhteensä</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="statMonth">0</div>
+      <div class="stat-label">Tässä kuussa</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="statStreak">0</div>
+      <div class="stat-label">Putki (pv)</div>
+    </div>
+  </div>
+
+  <!-- Log session -->
+  <div class="log-session-area">
+    <h3>📝 Merkitse treeni</h3>
+    <div class="log-row" id="logTypeRow">
+      <button class="log-type-btn selected" data-type="Ohjelma 1" onclick="selectType(this)">💪 Ohjelma 1</button>
+      <button class="log-type-btn" data-type="Ohjelma 2" onclick="selectType(this)">🏋️ Ohjelma 2</button>
+      <button class="log-type-btn" data-type="Ohjelma 3" onclick="selectType(this)">🔥 Ohjelma 3</button>
+      <button class="log-type-btn" data-type="Fysioterapia" onclick="selectType(this)">🏥 Fysio</button>
+      <button class="log-type-btn" data-type="Muu" onclick="selectType(this)">⚡ Muu</button>
+    </div>
+    <button class="log-save-btn" onclick="logSession()">✅ Log Workout</button>
+  </div>
+
+  <!-- Calendar -->
+  <div class="cal-header">
+    <button class="cal-nav" onclick="calNav(-1)">‹</button>
+    <div class="cal-month-label" id="calMonthLabel"></div>
+    <button class="cal-nav" onclick="calNav(1)">›</button>
+  </div>
+
+  <div class="cal-legend" id="calLegend"></div>
+  <div class="cal-grid" id="calGrid"></div>
+
+  <!-- Session log -->
+  <div class="sessions-list">
+    <h3>Treenihistoria</h3>
+    <div id="sessionsList"></div>
+  </div>
+
+</div>
+
+<footer>Lauri · Treeniohjelmat</footer>
+
+<!-- PHYSIO PAGE -->
+<div id="physio" class="page">
+
+  <!-- GENERAL INSTRUCTIONS -->
+  <div class="freq-banner">
+    <strong>Harjoitusohjeet:</strong> Tee harjoitukset 3 x vko. Jos oireet provosoituvat harjoittelun aikana tai jälkeen, kevennä 20 % edeltävän harjoituskerran kuormasta. Tavoite: kokonaiskuormitus alaraajan sallimalle tasolle + asteittainen rasituksensietokyvyn nosto.
+  </div>
+
+  <!-- KNEE REHAB -->
+  <div class="physio-section-title">🦵 Polven kuntoutus – Aktiiviset liikkuvuusharjoitteet</div>
+  <div class="date-chip">Terveystalo · 4–5 x/vko</div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Kyykky (useita variaatioita)</div>
+        <span class="physio-badge">15–25 toistoa · 1–3 sarjaa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Maljakyykky, kantapäiden alla koroke, selkä seinää vasten tai selän takana rulla/pallo</li>
+        <li>Sivusuunnan kyykyt</li>
+        <li>Sivusuunnan matala kävely vastuskumppari jalkaterien ympäri, työnnä toisella jalalla mahdollisimman pitkälle – pysy matalana</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Lonkan kierrot & koukistus</div>
+        <span class="physio-badge">20–25 toistoa · 2–4 x · päivittäin</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Istuen korokkeella: lonkan kierrot</li>
+        <li>Toispolviseisonnasta lonkan kierto ja astu eteen lonkan koukistukseen – palaa samaa reittiä takaisin, pidä lantio ylhäällä</li>
+        <li>Lonkan sisä- ja ulkokierto istuen ja selinmakuulla</li>
+        <li>Voit ottaa tyynyn lonkkien kiertoon mukaan</li>
+        <li>Nelinkontin lonkan ulkierto vastustaen kumpparilla</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Peilin edessä bulgarialainen askelkyykky</div>
+        <span class="physio-badge">8–12 toistoa · 2–4 sarjaa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Kahvakuulat molempiin käsiin</li>
+        <li>2 sekunnin pito 90 asteen polvikulmassa</li>
+        <li>Hallitse lantio, ota tuki mukaan tarvittaessa</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Lonkan koukistus taljassa</div>
+        <span class="physio-badge">8–12 toistoa · 2–4 sarjaa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>2–3 sekunnin pito ylä-asennossa</li>
+        <li>Tukijalka vahvana, tukijalan vetoketju</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Lantionnosto / yhdellä jalalla</div>
+        <span class="physio-badge">8–12 toistoa · 2–4 sarjaa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Kahdella jalalla ylös, yhdellä pito, ja yhdellä laske alas</li>
+        <li>2–3 sekunnin pito ylä-asennossa</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- TERVEYSTALO 10.8.2023 -->
+  <div class="physio-section-title">🏥 Polven ohjelma 1</div>
+  <div class="date-chip">Terveystalo · 10.8.2023</div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Polviseisonta – pakaroiden aktivointi</div>
+        <span class="physio-badge">8 toistoa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Polviseisonnassa, kädet rinnan päällä ristissä</li>
+        <li>Supista pakaralihaksia voimakkaasti yhteen, kallistu hieman taaksepäin</li>
+        <li>Pidä selkä suorana. Palaa alkuasentoon</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Lantionnosto selinmakuulla</div>
+        <span class="physio-badge">15 toistoa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Selinmakuulla polvet koukussa</li>
+        <li>Jännitä pakaralihakset ja rullaa lantio irti alustalta</li>
+        <li>Palaa rauhallisesti takaisin alkuasentoon</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Lantionnosto lonkkien ulkokierrolla</div>
+        <span class="physio-badge">15 toistoa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Selinmakuulla polvet koukussa, vastusnauhalenkki reisien ympärillä lähellä polvia</li>
+        <li>Kierrä polvia hieman ulospäin vastusnauhan vastusta vasten</li>
+        <li>Jännitä pakaralihakset ja rullaa lantio irti alustalta – pidä polvet etäällä toisistaan</li>
+        <li>Palaa rauhallisesti takaisin alkuasentoon</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Kyykky kahdella ja yhdellä jalalla – linjaus</div>
+        <span class="physio-badge">10 toistoa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Seiso lantion levyisessä haara-asennossa</li>
+        <li>Kyykisty viemällä takapuolta taakse ja koukistamalla polvia</li>
+        <li>Työnnä polvia ulospäin säilyttääksesi lonkan, polven ja varpaiden linjauksen</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- TERVEYSTALO 7.9.2023 -->
+  <div class="physio-section-title">🏥 Polven ohjelma 2</div>
+  <div class="date-chip">Terveystalo · 7.9.2023</div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Polven ojennus vastusnauhan kanssa</div>
+        <span class="physio-badge">10 toistoa / jalka</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Istu hyvässä ryhdissä, vastusnauha jalkaterän ympärillä ja toinen pää taaksesi kiinnitettynä</li>
+        <li>Jännitä etureiden lihakset ja ojenna polvi suoraksi vastusnauhan vetoa vasten</li>
+        <li>Palaa hallitusti takaisin alkuasentoon</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Polven vastustettu loppuojennus seisten</div>
+        <span class="physio-badge">10 toistoa / jalka</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Seiso hyvässä ryhdissä jalat noin lantionlevyisessä asennossa</li>
+        <li>Vastusnauhan lenkki harjoitettavan jalan polvitaipeessa, nauhan toinen pää tukevasti eteesi kiinnitettynä</li>
+        <li>Anna kantapään irrota alustasta ja vastusnauhan vetää polvea koukkuun</li>
+        <li>Ojenna polvi painamalla kantapää maahan ja jännittämällä etureiden lihakset</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Pohjevenytys + varpaillannousu</div>
+        <span class="physio-badge">15 toistoa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Seiso päkiät askelman reunalla, polvet suorana – ota tukea tarvittaessa</li>
+        <li>Laske kantapäitä alaspäin kunnes tunnet venytyksen pohjelihaksissa</li>
+        <li>Pidä asento ja hengitä rauhallisesti. Palaa takaisin alkuasentoon</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Askellus portaalle ja portaalta alas</div>
+        <span class="physio-badge">8–10 toistoa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Askeltaessasi alas, huomioi lonkkien, polvien ja varpaiden linjaus</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Kyykky</div>
+        <span class="physio-badge">10 toistoa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Seiso hieman lantiota leveämmässä asennossa, varpaat osoittavat eteenpäin tai muutaman asteen ulospäin</li>
+        <li>Pidä rintakehä ylhäällä ja selkä ja niska keskiasennossa</li>
+        <li>Kyykisty viemällä lantiota taakse ja ojenna käsiä etuviistoon</li>
+        <li>Ponnista takaisin ylös kantapäiden kautta, rintakehä edellä ja ojenna lonkat</li>
+        <li>Säilytä lonkkien, polvien ja varpaiden linjaus. Älä anna alaselän pyöristyä</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Yhden jalan tasapaino tasapainolaudalla</div>
+        <span class="physio-badge">10–15 sekuntia / jalka</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Seiso yhdellä jalalla tasapainolaudalla</li>
+        <li>Tasapainoile ja yritä pitää tasapainolauta vaakatasossa</li>
+        <li>Aseta tasapainolauta alustalle, joka ei ole liukas</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- TERVEYSTALO 21.9.2023 -->
+  <div class="physio-section-title">🏥 Polven ohjelma 3</div>
+  <div class="date-chip">Terveystalo · 21.9.2023 · 4–5 x/vko</div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Yhden jalan minikyykky</div>
+        <span class="physio-badge">10 toistoa / jalka</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Seiso yhdellä jalalla, toinen jalka ilmassa vartalon etupuolella</li>
+        <li>Kyykisty ja pidä toinen jalka ilmassa – ponnista takaisin alkuasentoon</li>
+        <li>Pidä lonkka, polvi ja varpaat samassa linjassa ja lantio vaakatasossa</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Yhden jalan maastaveto, ilman painoa</div>
+        <span class="physio-badge">10 toistoa / puoli</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Seiso hyvässä ryhdissä, paino toisessa kädessä ja saman puolen jalka ilmassa</li>
+        <li>Pidä seisomajalan polvi pehmeästi KOUKUSSA ja taivuta vartaloa lonkasta eteen</li>
+        <li>Ojenna samalla toista jalkaa suoraksi taakse ja laske painoa kohti lattiaa</li>
+        <li>Käytä takareittä ja pakaraa noustessasi takaisin yhden jalan seisontaan</li>
+        <li>Pidä keskivartalo aktiivisena ja säilytä selän neutraaliasento – AJOVALOT OSOITTAA ETEENPÄIN</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Pohkeen vahvistus askelkyykkyasennossa</div>
+        <span class="physio-badge">10 toistoa / jalka</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Aloita seisomalla pitkässä käyntiasennossa kirja etummaisen jalan päkiän alla</li>
+        <li>Kyykisty alas ja pysy tässä asennossa</li>
+        <li>Ojenna nilkkaa nostamalla etummaisen jalan kantapäätä – pidä hetki ja laske kantapää takaisin alkuasentoon</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Lantionnosto + yhden jalan irrotus</div>
+        <span class="physio-badge">10 toistoa / puoli</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Tee kahden jalan lantionnosto – ylhäällä irrota toinen jalka alustasta</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Päinmakuulla nauha nilkan ympärillä</div>
+        <span class="physio-badge">10 toistoa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Jännitä vatsalihakset pitääksesi alaselän suorana</li>
+        <li>Koukista polvi ja vedä nauhaa molemmin käsin, kunnes tunnet venytyksen reiden etuosassa</li>
+        <li>Pidä venytys noin 20 sekuntia – rentoudu</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Kyykky pallolla</div>
+        <span class="physio-badge">10 toistoa / jalka</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>1. Aktivoi pakara painamalla palloa seinään n. 20–30 sek</li>
+        <li>2. Minikyykky pallon kanssa</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- TERVEYSTALO 12.10.2023 -->
+  <div class="physio-section-title">🏥 Polven ohjelma 4</div>
+  <div class="date-chip">Terveystalo · 12.10.2023</div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Askelkyykky – linjaus (vastusnauha)</div>
+        <span class="physio-badge">10 toistoa / jalka</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Vastusnauha jalan ympärillä (polven ala- tai yläpuolella), nauhan toinen pää kiinnitettynä sivulle niin että vastusnauha vetää polvea sisäänpäin</li>
+        <li>Kyykisty ja ponnista takaisin ylös – aktivoi pakaralihakset säilyttääksesi linjauksen</li>
+        <li>Etummaisen jalan säären tulisi pysyä pystysuorassa</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Askelkyykky sivulle jalkaa liu'uttaen</div>
+        <span class="physio-badge">10 toistoa / jalka</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Laita paperi/villasukka liu'utettavan jalan alle</li>
+        <li>Vastusnauhalenkki molempien jalkaterien ympärillä</li>
+        <li>Kyykisty alas yhdellä jalalla ja samaan aikaan liu'uta toista jalkaa sivulle – pidä polvi suorana ja varpaat kiinni alustassa</li>
+        <li>Säilytä linjaus: lonkka, polvi, varpaat</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Lonkan loitontajien vahvistus seisten</div>
+        <span class="physio-badge">10 toistoa / jalka</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Seisten, polvet hieman koukussa, vastusnauhalenkki polvien ympärillä (hieman polvien yläpuolella)</li>
+        <li>Nosta toinen jalka ja koukista polvi – kierrä lonkkaa auki</li>
+        <li>Palauta takaisin alkuasentoon</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Jalan nosto konttausasennossa</div>
+        <span class="physio-badge">10 toistoa / jalka</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Konttausasennossa kyynärvarsien ja polvien varassa – lonkat hieman koukussa</li>
+        <li>Paina kyynärvarsia alustaa vasten ja yläselkää ylöspäin</li>
+        <li>Pidä polvet koukussa ja nosta niitä irti alustasta, niin että olet tuettuna varpaiden varaan</li>
+        <li>Nosta toinen jalka ilman jännittämällä pakaroita – laske jalka takaisin ja toista toisella</li>
+        <li>Koeta pitää asento mahdollisimman vakaana</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Vartalon kierron hallinta (vastusnauha)</div>
+        <span class="physio-badge">15 toistoa / puoli</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Seiso sivuttain vastusnauhaan päin, pitele nauhasta molemmin käsin</li>
+        <li>Kädet nostettuna suorana eteen rintakehän korkeudelle, vastusnauhasta löysät pois</li>
+        <li>Astu sivulle, poispäin vastusnauhasta ja säilytä asento – älä anna vastusnauhan vetää vartaloa kiertoon</li>
+        <li>Palauta kuminauha rauhallisesti</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Nordic curl</div>
+        <span class="physio-badge">5–6 toistoa · jarruttava liike</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Polviseisonnassa, jalat tuettuina – laske vartaloa hitaasti eteen jarruttaen</li>
+        <li>Jarruttava liike – hallittu lasku</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Lantionnosto + jalan liu'utus suoraksi</div>
+        <span class="physio-badge">10 toistoa · jarruttava liike</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Selinmakuulla – nosta lantio ylös ja liu'uta toinen jalka suoraksi</li>
+        <li>Jarruttava liike – hallittu palautus</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Kahden jalan mini hyppelyt pehmeällä</div>
+        <span class="physio-badge">Sarjoja</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Pienet hyppelyt pehmeällä alustalla molemmat jalat yhtä aikaa</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- LINJAUS / TASAPAINO -->
+  <div class="physio-section-title">⚖️ Linjaus & Tasapaino</div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Yhdellä jalalla seisonta – linjaus</div>
+        <span class="physio-badge">30 sek / puoli</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Seiso yhdellä jalalla: lonkka, polvi, nilkka, jalkaterä ja II varvas samassa linjassa</li>
+        <li>Jalkaterän tukipinta: paino kantapää, ulkokaari ja päkiä</li>
+        <li>Tasapainottele yhdellä jalalla 30 sek / puoli</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Vatsanmakuulla polvien koukistus + jalannosto</div>
+        <span class="physio-badge">Koukistus × 15 · pito 5 sek</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Kuminauha nilkoissa</li>
+        <li>Koukistus × 15 – pito ilmassa 5 sek</li>
+        <div class="note-box">⚠️ VAIN ENNEN OPERAATIOTA!</div>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CORE & SELKÄ -->
+  <div class="physio-section-title">🔧 Core & Selkä</div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Takaketjun pumpaus</div>
+        <span class="physio-badge">10 toistoa / jalka</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Selinmakuulla – tartu käsillä polven takaa</li>
+        <li>Ojenna ja koukista polvi, ilman että pysähdyt</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Pakaran pumpaus</div>
+        <span class="physio-badge">10 toistoa / jalka</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Käy selinmakuulle – nosta jalka ylös etureiteen, nilkka koukussa ja avaa polvi sivulle</li>
+        <li>Alempi jalka lähellä pakaraan ja kantapää irti</li>
+        <li>Nosta molemmat jalat kohti vatsaa, selkä pysyy suorana, ja palauta saman tien alas</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Pallean ja syvien lihasten aktivointi</div>
+        <span class="physio-badge">noin 2 min</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Selinmakuulla lonkat ja polvet koukussa, lanneranka ja lantio keskiasennossa</li>
+        <li>Voit myös nostaa jalat ylös esim. sohvalle jos selkä pysyy rennompi silloin</li>
+        <li>Hengitä nenän kautta ilmaa sisään, puhalla suun kautta ulos loppuun asti</li>
+        <li>Tunnet kevyen jännityksen lantioluun sisäpuolella</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Hallinta – kierto</div>
+        <span class="physio-badge">3 × 10</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Selinmakuulla, polvet koukussa selkä neutraliasennossa ja kädet niskan takana</li>
+        <li>Aktivoi lantionpohjalihakset ja syvät vatsalihakset</li>
+        <li>Nouse ylös niin että hartiat nousevat lattiasta, selän asento säilyy</li>
+        <li>Kierrä sivulle, lantion painopiste pysyy keskellä – palauta alas</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Hallintaliike / vatsalihakset</div>
+        <span class="physio-badge">3 × 10</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Selinmakuulla – nosta molemmat jalat 90° kulmaan</li>
+        <li>Tiivistä vatsalihakset mukaan ja laske hitaasti toinen jalka alas, polvi vielä koukussa</li>
+        <li>Selän ja lantion asento säilyy – palauta ylös ja toista vuorotellen</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SELKÄ 2018 -->
+  <div class="physio-section-title">🔧 Selkä & Lonkankoukistajat</div>
+  <div class="date-chip">Eira Sairaala · 2018</div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Selän taaksetaivutus seisten (McKenzie)</div>
+        <span class="physio-badge">10 toistoa · 2 × päivä</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Seiso suorana jalat hieman erillään toisistaan</li>
+        <li>Aseta kädet vyötärön kohdalle – taivuta ylävartalo vyötäröstä taaksepäin niin pitkälle kuin mahdollista</li>
+        <li>Pidä polvet suorina. Joka kerta koeta taivuttaa yhä pitemmälle taaksepäin</li>
+        <li>Kotona voit myös käydä vatsanmakuuasentoon – pieni taaksetaivutus alaselälle, pidä asento noin 5 min</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Lonkankoukistajat – venytys</div>
+        <span class="physio-badge">6 × / puoli</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Polviseisonnassa – työnnä lantiota eteen "häntä" polvien väliin</li>
+        <li>Nosta käsi ylös ja toista käden nosto 6×</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Lantion kierto selinmakuulla</div>
+        <span class="physio-badge">20 toistoa · 2 × päivä</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Selinmakuulla polvet koukussa</li>
+        <li>Kierrä polvet rauhallisesti puolelta toiselle, ylävartalo pysyy paikallaan</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- OLKAPÄÄ -->
+  <div class="physio-section-title">💪 Olkapää & Lapa</div>
+  <div class="date-chip">Terveystalo · 2016</div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Olkapään mobilisointi – seinävieritys</div>
+        <span class="physio-badge">2 sarjaa · 30 sek / puoli</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Asetu seinän viereen kämmen seinää vasten</li>
+        <li>Vie kättä ylemmäs seinällä – kierrä vartaloa kädestä poispäin</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Käsien nosto sivukautta ylös</div>
+        <span class="physio-badge">20 toistoa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Vie kädet sivukautta ylös – ylhäällä laita kädet ristiin ja kurota suoraan ylös</li>
+        <li>Laske kädet hallitusti alas ja toista</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Keppi / pyyhe selän taakse</div>
+        <span class="physio-badge">20 toistoa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Vie keppi tai pyyhe selän taakse, auta oireettomalla kädellä oikeaa kättä alhaalta ylöspäin</li>
+        <li>Voit viedä käsiä pumppaavalla liikkeellä ylös ja alas</li>
+        <li>Ranteet suorana, alempi käsi lähellä selkärankaa ja hartiat takana</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Olkapään ulkokierto kuminauhalla</div>
+        <span class="physio-badge">3 sarjaa · 20 toistoa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Pidä kyynärpää kyljessä (ei selän taakse) ja lapa kontrollissa</li>
+        <li>Tartu kuminauhaan ja kierrä kyynärvarsi ulospäin (olkavarsi kiertyy, kyynärpää paikoillaan)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Olkavarren ulko- ja sisäkierto kuminauhalla</div>
+        <span class="physio-badge">3 sarjaa · 20 toistoa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Kyynärpää kyljessä ja 90 asteen koukussa</li>
+        <li>Kuminauha venyttää kämmenselkää ulospäin (olkavarren ulkokierto) – vedä sitten kämmentä vatsaa kohti (olkavarren sisäkierto)</li>
+        <li>Palauta hitaasti venytyksen ja toista</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-section-title">💪 Olkapää & Lapa – vahvistus</div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Vipunosto sivulle (deltoideus)</div>
+        <span class="physio-badge">3 × 10</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Seiso haara-asennossa käsipainot käsissä, kämmenet sisäänpäin</li>
+        <li>Nosta käsivarret suorina sivuilta ylös hartiotasolle – kämmenet osoittavat loppuasennossa alaspäin</li>
+        <li>Laske kädet alas. Pidä hartiat rentoina ja vartalo suorana</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Pystypunnerrus käsipainoilla (deltoideus)</div>
+        <span class="physio-badge">3 × 10</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Istu ja nosta käsipainoja yhtä aikaa ylös alas</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Seinäpunnerrus – lavan neutraaliasento</div>
+        <span class="physio-badge">10 toistoa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Hae lavan neutraaliasento – säilytä lavan ja olkapään neutraali ja vie kädet eteen</li>
+        <li>Nojaa seinään – kontrolloi vasen lapa punnertaessasi kohti seinää</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="physio-card" onclick="toggleCard(this)">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="exercise-name">Soutuliike istuen kuminauhalla</div>
+        <span class="physio-badge">3 sarjaa · 15 toistoa</span>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="card-body">
+      <ul class="cue-list">
+        <li>Istuen, jalat suorana – tee kuminauhaa vastuksena käyttäen soutuliike</li>
+        <li>Liikkeen lopussa tuo olkapäät taakse ja lavat yhteen</li>
+        <li>Palauta lähtöasentoon</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
 
 <script>
-const i18n = {
-  en: {
-    nav_all:"All Recipes", nav_fitness:"Fitness",
-    hero_eyebrow:"A curated kitchen",
-    hero_title:"Cook with <em>intention,</em><br>eat with joy",
-    hero_sub:"A handpicked collection of recipes for every season, mood, and occasion.",
-    search_placeholder:"Search recipes...",
-    filter_all:"All", filter_breakfast:"Breakfast", filter_lunch:"Lunch",
-    filter_dinner:"Dinner", filter_dessert:"Dessert", filter_vegan:"Vegan", filter_fitness:"Fitness",
-    section_title:"All recipes", no_results:"No recipes match your search.",
-    ingredients:"Ingredients", method:"Method", footer_made:"made with care",
-    time_label:"Time", serves_label:"Serves", difficulty_label:"Difficulty",
-    count_recipes:(n)=>`${n} recipe${n!==1?'s':''}`,
-    cat_breakfast:"Breakfast", cat_lunch:"Lunch", cat_dinner:"Dinner",
-    cat_dessert:"Dessert", cat_fitness:"Fitness",
-    protein:"protein", carbs:"carbs", fat:"fat"
-  },
-  fi: {
-    nav_all:"Kaikki reseptit", nav_fitness:"Fitness",
-    hero_eyebrow:"Kurattu keitti\u00f6",
-    hero_title:"Kokkaa <em>harkiten,</em><br>sy\u00f6 ilolla",
-    hero_sub:"Valikoitu kokoelma reseptej\u00e4 joka sesonkiin, tunnelmaan ja tilaisuuteen.",
-    search_placeholder:"Hae reseptej\u00e4...",
-    filter_all:"Kaikki", filter_breakfast:"Aamiainen", filter_lunch:"Lounas",
-    filter_dinner:"Illallinen", filter_dessert:"J\u00e4lkiruoka", filter_vegan:"Vegaani", filter_fitness:"Fitness",
-    section_title:"Kaikki reseptit", no_results:"Ei hakua vastaavia reseptej\u00e4.",
-    ingredients:"Ainekset", method:"Valmistus", footer_made:"tehty rakkaudella",
-    time_label:"Aika", serves_label:"Annokset", difficulty_label:"Vaikeustaso",
-    count_recipes:(n)=>`${n} resepti${n!==1?'\u00e4':''}`,
-    cat_breakfast:"Aamiainen", cat_lunch:"Lounas", cat_dinner:"Illallinen",
-    cat_dessert:"J\u00e4lkiruoka", cat_fitness:"Fitness",
-    protein:"proteiinia", carbs:"hiilareita", fat:"rasvaa"
+  /* ══════════════════════════════════════
+     SUPABASE REST CLIENT (no CDN needed)
+  ══════════════════════════════════════ */
+  const SUPA_URL = 'https://azgraotogacudqpuahrz.supabase.co';
+  const SUPA_KEY = 'sb_publishable_RoeDClj0q0LC6T4A3AGkmQ_rWjYtvDk';
+
+  // ── Logger utility ──
+  const log = {
+    info:  (...a) => console.log('%c[PT]',  'color:#c8a84b;font-weight:700', ...a),
+    ok:    (...a) => console.log('%c[OK]',  'color:#3dba6e;font-weight:700', ...a),
+    warn:  (...a) => console.warn('%c[WARN]','color:#e8864a;font-weight:700', ...a),
+    error: (...a) => console.error('%c[ERR]','color:#e05555;font-weight:700', ...a),
+    group: (label) => console.groupCollapsed('%c[PT] ' + label, 'color:#c8a84b;font-weight:700'),
+    end:   () => console.groupEnd()
+  };
+
+  // Minimal Supabase REST + Auth wrapper using plain fetch
+  const supa = {
+    _authToken: null,
+
+    _headers(extra = {}) {
+      const h = {
+        'Content-Type': 'application/json',
+        'apikey': SUPA_KEY,
+        'Prefer': 'return=representation',
+        ...extra
+      };
+      if (this._authToken) h['Authorization'] = 'Bearer ' + this._authToken;
+      else h['Authorization'] = 'Bearer ' + SUPA_KEY;
+      return h;
+    },
+
+    auth: {
+      async signUp({ email, password }) {
+        log.group('AUTH signUp');
+        log.info('Email:', email);
+        let res, data;
+        try {
+          res = await fetch(`${SUPA_URL}/auth/v1/signup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY },
+            body: JSON.stringify({ email, password })
+          });
+          data = await res.json();
+        } catch(e) {
+          log.error('Network error during signUp:', e.message);
+          log.end();
+          return { data: null, error: { message: 'Network error: ' + e.message } };
+        }
+        log.info('Status:', res.status);
+        log.info('Response:', JSON.stringify(data));
+        if (!res.ok) {
+          const msg = data.error_description || data.message || data.msg || 'Sign up failed (' + res.status + ')';
+          log.error('SignUp failed:', msg);
+          log.end();
+          return { data: null, error: { message: msg } };
+        }
+        if (data.access_token) {
+          supa._authToken = data.access_token;
+          localStorage.setItem('pt_token', data.access_token);
+          localStorage.setItem('pt_refresh', data.refresh_token || '');
+          localStorage.setItem('pt_user', JSON.stringify(data.user));
+          log.ok('SignUp success — user auto signed in:', data.user?.email);
+        } else {
+          log.ok('SignUp success — email confirmation required');
+        }
+        log.end();
+        return { data: { user: data.user || data, session: data.access_token ? data : null }, error: null };
+      },
+
+      async signInWithPassword({ email, password }) {
+        log.group('AUTH signIn');
+        log.info('Email:', email);
+        let res, data;
+        try {
+          res = await fetch(`${SUPA_URL}/auth/v1/token?grant_type=password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY },
+            body: JSON.stringify({ email, password })
+          });
+          data = await res.json();
+        } catch(e) {
+          log.error('Network error during signIn:', e.message);
+          log.end();
+          return { data: null, error: { message: 'Network error: ' + e.message } };
+        }
+        log.info('Status:', res.status);
+        if (!res.ok) {
+          const msg = data.error_description || data.message || 'Invalid email or password';
+          log.error('SignIn failed:', msg);
+          log.end();
+          return { data: null, error: { message: msg } };
+        }
+        supa._authToken = data.access_token;
+        localStorage.setItem('pt_token', data.access_token);
+        localStorage.setItem('pt_refresh', data.refresh_token || '');
+        localStorage.setItem('pt_user', JSON.stringify(data.user));
+        log.ok('SignIn success — user:', data.user?.email, '| id:', data.user?.id);
+        log.end();
+        return { data: { user: data.user, session: data }, error: null };
+      },
+
+      async signOut() {
+        log.group('AUTH signOut');
+        try {
+          await fetch(`${SUPA_URL}/auth/v1/logout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + supa._authToken }
+          });
+          log.ok('Signed out successfully');
+        } catch(e) {
+          log.warn('SignOut request failed (clearing local anyway):', e.message);
+        }
+        supa._authToken = null;
+        localStorage.removeItem('pt_token');
+        localStorage.removeItem('pt_refresh');
+        localStorage.removeItem('pt_user');
+        log.end();
+      },
+
+      async getSession() {
+        const token = localStorage.getItem('pt_token');
+        const userStr = localStorage.getItem('pt_user');
+        if (!token || !userStr) {
+          log.info('getSession: no saved session found');
+          return { data: { session: null } };
+        }
+        supa._authToken = token;
+        try {
+          const user = JSON.parse(userStr);
+          log.ok('getSession: restored session for', user.email);
+          return { data: { session: { user, access_token: token } } };
+        } catch(e) {
+          log.error('getSession: failed to parse stored user:', e.message);
+          return { data: { session: null } };
+        }
+      },
+
+      onAuthStateChange(cb) { /* handled manually */ }
+    },
+
+    from(table) {
+      return new SupaTable(table);
+    }
+  };
+
+  class SupaTable {
+    constructor(table) {
+      this.table = table;
+      this._url = `${SUPA_URL}/rest/v1/${table}`;
+      this._filters = [];
+      this._selectCols = '*';
+      this._body = null;
+      this._method = 'GET';
+      this._prefer = 'return=representation';
+    }
+
+    select(cols = '*') { this._selectCols = cols; if (this._method === 'GET') this._method = 'GET'; return this; }
+    insert(body) { this._body = body; this._method = 'POST'; return this; }
+    update(body) { this._body = body; this._method = 'PATCH'; return this; }
+    upsert(body, opts = {}) {
+      this._body = body;
+      this._method = 'POST';
+      const conflict = opts.onConflict || '';
+      this._prefer = `resolution=merge-duplicates,return=representation`;
+      if (conflict) this._onConflict = conflict;
+      return this;
+    }
+    delete() { this._method = 'DELETE'; return this; }
+
+    eq(col, val) { this._filters.push(`${col}=eq.${encodeURIComponent(val)}`); return this; }
+    in(col, vals) { this._filters.push(`${col}=in.(${vals.map(v => encodeURIComponent(v)).join(',')})`); return this; }
+    order(col, { ascending = true } = {}) { 
+      // Remove any existing order filter first
+      this._filters = this._filters.filter(f => !f.startsWith('order='));
+      this._filters.push(`order=${col}.${ascending ? 'asc' : 'desc'}`); 
+      return this; 
+    }
+
+    single() { this._single = true; return this; }
+
+    async _run() {
+      let url = this._url;
+      const isRead = this._method === 'GET';
+
+      if (isRead) {
+        const params = ['select=' + this._selectCols, ...this._filters];
+        url += '?' + params.join('&');
+      } else {
+        const params = [...this._filters];
+        if (this._onConflict) params.push('on_conflict=' + encodeURIComponent(this._onConflict));
+        if (params.length) url += '?' + params.join('&');
+      }
+
+      const opts = {
+        method: this._method,
+        headers: supa._headers({ 'Prefer': this._prefer })
+      };
+      if (this._body && !isRead) opts.body = JSON.stringify(this._body);
+
+      log.info(`DB ${this._method} ${this.table}`, isRead ? '' : JSON.stringify(this._body || '').slice(0,120));
+
+      let res, text;
+      try {
+        res = await fetch(url, opts);
+        text = await res.text();
+      } catch(e) {
+        log.error(`DB network error on ${this.table}:`, e.message);
+        return { data: null, error: { message: 'Network error: ' + e.message } };
+      }
+
+      let data = null;
+      try { data = JSON.parse(text); } catch { data = null; }
+
+      if (!res.ok) {
+        log.error(`DB error ${this._method} ${this.table} — status:`, res.status, '| msg:', (data && data.message) || text);
+        return { data: null, error: { message: (data && data.message) || text } };
+      }
+
+      const count = Array.isArray(data) ? data.length : (data ? 1 : 0);
+      log.ok(`DB ${this._method} ${this.table} — ${count} row(s)`);
+      if (this._single && Array.isArray(data)) data = data[0] || null;
+      return { data, error: null };
+    }
+
+    then(resolve, reject) { return this._run().then(resolve, reject); }
   }
-};
 
-const badgeLabels = {
-  badge_quick:{en:"Quick",fi:"Nopea"},
-  badge_popular:{en:"Popular",fi:"Suosittu"},
-  badge_vegan:{en:"Vegan",fi:"Vegaani"},
-  badge_fitness:{en:"Fitness",fi:"Fitness"}
-};
+  let currentUser = null;
 
-const recipes = [
-  { id:1, emoji:"🌾", bg:"#FFF3E0", category:"breakfast", tags:["breakfast"], badge:"quick", badgeKey:"badge_quick",
-    en:{ title:"Golden turmeric porridge", desc:"A warming, anti-inflammatory bowl of oats with golden spices, honey, and toasted seeds.",
-      ingredients:["1 cup rolled oats","2 cups oat milk","1 tsp turmeric","½ tsp cinnamon","Pinch of black pepper","2 tbsp honey or maple syrup","2 tbsp pumpkin seeds","1 tbsp flaxseeds"],
-      steps:["Combine oats and oat milk in a saucepan over medium heat.","Stir in turmeric, cinnamon, and black pepper.","Cook for 5–7 minutes, stirring frequently, until thick and creamy.","Spoon into bowls, drizzle with honey, and top with toasted seeds."] },
-    fi:{ title:"Kultainen kurkumapuuro", desc:"L\u00e4mmitt\u00e4v\u00e4 kaurapuuro kultaisilla mausteilla, hunajalla ja paahdituilla siemenill\u00e4.",
-      ingredients:["1 dl kaurahiutaleita","2 dl kauramaitoa","1 tl kurkumaa","½ tl kanelia","Ripaus mustapippuria","2 rkl hunajaa tai vaahterasiirappia","2 rkl kurpitsansiemeni\u00e4","1 rkl pellavansiemeni\u00e4"],
-      steps:["Yhdist\u00e4 kaura ja kauramaito kattilassa keskilämmöllä.","Lis\u00e4\u00e4 kurkuma, kaneli ja mustapippuri.","Keitä 5–7 min sekoittaen, kunnes puuro on paksua.","Annostele kulhoihin, lisää hunaja ja paahdetut siemenet."] },
-    time:"15 min", serves:"2", difficulty:{en:"Easy",fi:"Helppo"} },
+  /* ── AUTH UI ── */
+  function switchAuthTab(tab) {
+    document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+    document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+    document.querySelectorAll('.auth-tab').forEach((b,i) => b.classList.toggle('active', (i===0) === (tab==='login')));
+    clearAuthMessages();
+  }
 
-  { id:2, emoji:"🍅", bg:"#FFEBEE", category:"lunch", tags:["vegan","lunch"], badge:"vegan", badgeKey:"badge_vegan",
-    en:{ title:"Roasted tomato & white bean soup", desc:"Deep, slow-roasted tomatoes blended with creamy cannellini beans and a swirl of basil oil.",
-      ingredients:["800g cherry tomatoes","4 garlic cloves","1 can cannellini beans, drained","500ml vegetable stock","3 tbsp olive oil","1 tsp smoked paprika","Salt & pepper","Fresh basil to serve"],
-      steps:["Preheat oven to 200°C. Toss tomatoes and garlic in 2 tbsp olive oil. Roast 25 min.","Transfer to a pot. Add beans, stock, and paprika. Simmer 10 minutes.","Blend until smooth. Season well.","Serve drizzled with olive oil and torn basil."] },
-    fi:{ title:"Paistettu tomaatti-valkopapukeitto", desc:"Hitaasti paistetut tomaatit sekoitettuna kermaisten cannellini-papujen ja basilika\u00f6ljyn kanssa.",
-      ingredients:["800 g kirsikkatomaatteja","4 valkosipulinkyntt\u00e4","1 prk cannellini-papuja, valutettu","5 dl kasvislient\u00e4","3 rkl oliivilj\u00f6y\u00e4","1 tl savupaprikaa","Suola ja pippuri","Tuoretta basilikaa"],
-      steps:["Kuumenna uuni 200°C. Pyörittele tomaatit ja valkosipuli öljyssä. Paista 25 min.","Siirrä kattilaan. Lisää pavut, liemi ja paprika. Hauduta 10 min.","Soseuta tasaiseksi. Mausta hyvin.","Tarjoile öljyllä ja basilikalla."] },
-    time:"45 min", serves:"4", difficulty:{en:"Easy",fi:"Helppo"} },
+  function showAuthError(msg) {
+    const el = document.getElementById('authError');
+    el.textContent = msg; el.style.display = 'block';
+    document.getElementById('authSuccess').style.display = 'none';
+  }
+  function showAuthSuccess(msg) {
+    const el = document.getElementById('authSuccess');
+    el.textContent = msg; el.style.display = 'block';
+    document.getElementById('authError').style.display = 'none';
+  }
+  function clearAuthMessages() {
+    document.getElementById('authError').style.display = 'none';
+    document.getElementById('authSuccess').style.display = 'none';
+  }
 
-  { id:3, emoji:"🍋", bg:"#FFFDE7", category:"dinner", tags:["dinner"], badge:"popular", badgeKey:"badge_popular",
-    en:{ title:"Lemon herb roast chicken", desc:"A classic Sunday roast with crispy skin, fragrant herbs under the breast, and bright lemon.",
-      ingredients:["1 whole chicken (about 1.8kg)","1 lemon, halved","4 garlic cloves","3 tbsp softened butter","1 tbsp fresh thyme leaves","1 tbsp fresh rosemary, chopped","Salt & black pepper","Olive oil"],
-      steps:["Preheat oven to 200°C. Mix butter with thyme, rosemary, and lemon zest.","Push herb butter under the skin over the breast.","Stuff cavity with lemon and garlic. Rub skin with oil and season.","Roast 1 hr 20 min until juices run clear. Rest 15 minutes."] },
-    fi:{ title:"Sitruuna-yrtti-paahtokanapaistos", desc:"Klassinen sunnuntaipaistos rapealla nahalla, aromaattisilla yrteill\u00e4 ja kirpe\u00e4ll\u00e4 sitruunalla.",
-      ingredients:["1 kokonainen kana (n. 1,8 kg)","1 sitruuna, puoliksi","4 valkosipulinkyntt\u00e4","3 rkl pehmeit\u00e4 voita","1 rkl tuoreita timjaminlehti\u00e4","1 rkl tuoretta rosmariinia hienonnettuna","Suola ja mustapippuri","Oliivilj\u00f6y\u00e4"],
-      steps:["Kuumenna uuni 200°C. Sekoita voi yrttien ja sitruunankuoren kanssa.","Ty\u00f6nn\u00e4 yrttivoi ihon alle.","T\u00e4yt\u00e4 ontelo sitruunalla ja valkosipulilla. Hiero iho \u00f6ljyll\u00e4 ja mausta.","Paista 1 h 20 min kunnes nesteet kirkkaita. Lepuuta 15 min."] },
-    time:"1 h 30 min", serves:"4", difficulty:{en:"Medium",fi:"Keskivaikea"} },
+  async function doLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    if (!email || !password) { showAuthError('Please enter email and password.'); return; }
+    const btn = document.querySelector('#loginForm .auth-submit');
+    btn.disabled = true; btn.textContent = 'Signing in...';
+    const { data, error } = await supa.auth.signInWithPassword({ email, password });
+    btn.disabled = false; btn.textContent = 'Sign In →';
+    if (error) { showAuthError(error.message); return; }
+    onSignedIn(data.user);
+  }
 
-  { id:4, emoji:"🍫", bg:"#EFEBE9", category:"dessert", tags:["dessert"], badge:"popular", badgeKey:"badge_popular",
-    en:{ title:"Dark chocolate lava cakes", desc:"Intensely chocolatey individual cakes with a molten, flowing centre. Effortlessly impressive.",
-      ingredients:["150g dark chocolate (70%)","100g unsalted butter","3 eggs + 3 egg yolks","80g caster sugar","2 tbsp plain flour","Cocoa powder for dusting","Vanilla ice cream to serve"],
-      steps:["Preheat oven to 200°C. Butter 4 ramekins and dust with cocoa.","Melt chocolate and butter together. Cool slightly.","Whisk eggs, yolks, and sugar until pale. Fold in chocolate, then flour.","Pour into ramekins. Bake 10–12 min until edges are set, centre still wobbles.","Turn out and serve immediately with vanilla ice cream."] },
-    fi:{ title:"Tummansuklainen lava-kakku", desc:"Intensiivisen suklaisia yksilöllisiä kakkuja nestemäisellä, virtaavalla täytteellä.",
-      ingredients:["150 g tummaa suklaata (70%)","100 g suolatonta voita","3 munaa + 3 munankeltuaista","80 g hienoa sokeria","2 rkl vehn\u00e4jauhoja","Kaakaopulveria vuokiin","Vaniljaj\u00e4\u00e4tel\u00f6\u00e4"],
-      steps:["Kuumenna uuni 200°C. Voitele 4 vuokaa ja p\u00f6llyt\u00e4 kaakaolla.","Sulata suklaa ja voi. Anna j\u00e4\u00e4hty\u00e4.","Vatkaa munat ja sokeri vaaleaksi. Sekoita suklaa ja jauhot.","Kaada vuokiin. Paista 10–12 min. Kumoa ja tarjoile j\u00e4\u00e4tel\u00f6n kanssa."] },
-    time:"25 min", serves:"4", difficulty:{en:"Medium",fi:"Keskivaikea"} },
+  async function doRegister() {
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    if (!email || !password) { showAuthError('Please enter email and password.'); return; }
+    if (password.length < 6) { showAuthError('Password must be at least 6 characters.'); return; }
+    const btn = document.querySelector('#registerForm .auth-submit');
+    btn.disabled = true; btn.textContent = 'Creating account...';
+    console.log('Registering:', email);
+    const { data, error } = await supa.auth.signUp({ email, password });
+    console.log('Register data:', JSON.stringify(data));
+    console.log('Register error:', JSON.stringify(error));
+    btn.disabled = false; btn.textContent = 'Create Account →';
+    if (error) { showAuthError(error.message); return; }
+    if (data && data.user && data.user.identities && data.user.identities.length === 0) {
+      showAuthError('An account with this email already exists.'); return;
+    }
+    if (data && data.session) {
+      onSignedIn(data.user);
+      return;
+    }
+    showAuthSuccess('✅ Account created! You can now sign in.');
+    switchAuthTab('login');
+    document.getElementById('loginEmail').value = email;
+  }
 
-  { id:5, emoji:"🍆", bg:"#EDE7F6", category:"dinner", tags:["vegan","dinner"], badge:"vegan", badgeKey:"badge_vegan",
-    en:{ title:"Miso glazed aubergine", desc:"Silky roasted aubergine coated in a sweet white miso glaze, served over fragrant jasmine rice.",
-      ingredients:["2 aubergines, halved","3 tbsp white miso","2 tbsp mirin","1 tbsp soy sauce","1 tsp sesame oil","1 tsp sugar","Sesame seeds & spring onion","Cooked jasmine rice"],
-      steps:["Score aubergine flesh in a diamond pattern. Brush with oil, cut-side down. Roast 20 min at 200°C.","Mix miso, mirin, soy, sesame oil, and sugar into a glaze.","Flip aubergines, brush with glaze. Roast 10 more minutes.","Serve over rice with sesame seeds and spring onion."] },
-    fi:{ title:"Miso-lasitettu munakoiso", desc:"Silkkinen paistettu munakoiso makean valkoisen mison lasitteella, jasmiiniriisin p\u00e4\u00e4ll\u00e4.",
-      ingredients:["2 munakoisoa, puoliksi","3 rkl valkoista misoa","2 rkl mirin\u00e4","1 rkl soijakastiketta","1 tl seesamil\u00f6jy\u00e4","1 tl sokeria","Seesaminsiemeni\u00e4 ja kev\u00e4tsipulia","Keitetty\u00e4 jasmiiniiriisi\u00e4"],
-      steps:["Viill\u00e4 munakoison pinta ruutukuvioksi. Paista \u00f6ljyll\u00e4 leikkauspuoli alas 20 min 200°C:ssa.","Sekoita miso, mirin, soija, seesamil\u00f6jy ja sokeri lasitteeksi.","K\u00e4\u00e4nn\u00e4 ja sivele lasitteella. Paista 10 min.","Tarjoile riisin p\u00e4\u00e4ll\u00e4 siemenill\u00e4 ja sipulilla."] },
-    time:"35 min", serves:"2", difficulty:{en:"Easy",fi:"Helppo"} },
+  async function doLogout() {
+    await supa.auth.signOut();
+    currentUser = null;
+    document.getElementById('authOverlay').style.display = 'flex';
+    document.getElementById('userPill').style.display = 'none';
+    // Reset checkboxes visually
+    document.querySelectorAll('.ex-checkbox').forEach(cb => {
+      cb.checked = false;
+      cb.closest('.exercise-card, .physio-card')?.classList.remove('done');
+    });
+    updateProgress();
+  }
 
-  { id:6, emoji:"🥑", bg:"#E8F5E9", category:"breakfast", tags:["breakfast"], badge:"quick", badgeKey:"badge_quick",
-    en:{ title:"Avocado & poached egg toast", desc:"Perfectly poached eggs on smashed avocado and sourdough, with chilli flakes and microgreens.",
-      ingredients:["2 ripe avocados","4 eggs","2 thick slices sourdough","1 lemon, juiced","Chilli flakes","Salt & pepper","Microgreens","1 tbsp white vinegar"],
-      steps:["Toast sourdough until golden. Mash avocado with lemon, salt, and pepper.","Bring water to gentle simmer. Add vinegar.","Create a swirl, poach eggs 3 minutes for runny yolk.","Spread avocado on toast, top with egg, chilli, and greens."] },
-    fi:{ title:"Avokado & uppomunapaahtoleipy\u00e4", desc:"T\u00e4ydellisesti upotetut munat murskatulla avokadolla ja hapanleiv\u00e4ll\u00e4, chilihiutaleilla.",
-      ingredients:["2 kypsy\u00e4 avokadoa","4 munaa","2 paksua viipaletta hapanleip\u00e4\u00e4","1 sitruunan mehu","Chilihiutaleita","Suolaa ja pippuria","Versovihanneksia","1 rkl valkoviinaetikkaa"],
-      steps:["Paahda leip\u00e4. Murskaa avokado sitruunamehulla ja mausteilla.","Kuumenna vesi kiehuvaksi. Lis\u00e4\u00e4 etikka.","Luo py\u00f6rre, uppomuna 3 min.","Levit\u00e4 avokado, lis\u00e4\u00e4 muna, chili ja vihannekset."] },
-    time:"15 min", serves:"2", difficulty:{en:"Easy",fi:"Helppo"} },
+  function onSignedIn(user) {
+    currentUser = user;
+    log.ok('onSignedIn — user:', user.email, '| id:', user.id);
+    document.getElementById('authOverlay').style.display = 'none';
+    const email = user.email || '';
+    const initial = email.charAt(0).toUpperCase();
+    document.getElementById('userAvatar').textContent = initial;
+    document.getElementById('userEmail').textContent = email.split('@')[0];
+    document.getElementById('userPill').style.display = 'flex';
+    syncChecksFromCloud();
+  }
 
-  { id:7, emoji:"🧅", bg:"#FFF8E1", category:"lunch", tags:["lunch"], badge:null,
-    en:{ title:"Classic French onion soup", desc:"Low-and-slow caramelised onions in a rich beef broth, topped with gruyère-laden croûtons.",
-      ingredients:["1.2kg onions, thinly sliced","50g butter","2 tbsp olive oil","200ml dry white wine","1.2L beef stock","1 tsp thyme","4 slices baguette","120g gruyère, grated"],
-      steps:["Cook onions in butter and oil over low heat for 45 min until deeply golden.","Add wine, scrape the pan. Simmer until reduced by half.","Add stock and thyme. Simmer 20 minutes. Season.","Ladle into ovenproof bowls, top with baguette and gruyère. Grill until bubbling."] },
-    fi:{ title:"Klassinen ranskalainen sipulikeitto", desc:"Hitaasti karamellisoitua sipulia t\u00e4yte\u00e4ll\u00e4 naudanliemell\u00e4, gruy\u00e8re-krutongeilla.",
-      ingredients:["1,2 kg sipulia ohuiksi viipaleiksi","50 g voita","2 rkl oliivilj\u00f6y\u00e4","2 dl kuivaa valkoviini\u00e4","1,2 l naudanlient\u00e4","1 tl timjamia","4 viipaletta patonkia","120 g gruy\u00e8rea raastettuna"],
-      steps:["Kypsenn\u00e4 sipulit voissa ja \u00f6ljyss\u00e4 45 min miedolla l\u00e4mm\u00f6ll\u00e4 kunnes kullanruskeat.","Lis\u00e4\u00e4 viini. Hauduta kunnes puolet h\u00e4ihtyy.","Lis\u00e4\u00e4 liemi ja timjami. Hauduta 20 min.","Kaada kulhoihin, lis\u00e4\u00e4 patonki ja juusto. Gratinoi."] },
-    time:"1 h 15 min", serves:"4", difficulty:{en:"Medium",fi:"Keskivaikea"} },
+  /* ══════════════════════════════════════
+     THEME
+  ══════════════════════════════════════ */
+  (function() {
+    const saved = localStorage.getItem('theme');
+    const isLight = saved === null ? true : saved === 'light';
+    if (isLight) document.documentElement.classList.add('light');
+  })();
 
-  { id:8, emoji:"🥭", bg:"#FFF3E0", category:"dessert", tags:["vegan","dessert"], badge:"vegan", badgeKey:"badge_vegan",
-    en:{ title:"Coconut mango chia pudding", desc:"A light, tropical no-cook pudding with creamy coconut, fresh mango, and toasted coconut flakes.",
-      ingredients:["400ml coconut milk","6 tbsp chia seeds","2 tbsp maple syrup","1 tsp vanilla extract","2 ripe mangoes, diced","Toasted coconut flakes","Lime zest"],
-      steps:["Whisk together coconut milk, chia seeds, maple syrup, and vanilla.","Refrigerate overnight or at least 4 hours until thick.","Spoon into glasses, top with mango, coconut flakes, and lime zest."] },
-    fi:{ title:"Kookos-mango-chiavanukas", desc:"Kep\u00e4\u00e4, trooppinen vanukas kermaisen kookoksen, tuoreen mangon ja paahdettujen kookoshiutaleiden kanssa.",
-      ingredients:["4 dl kookosmaitoa","6 rkl chiansiemeni\u00e4","2 rkl vaahterasiirappia","1 tl vaniljaekstraktia","2 kypsy\u00e4 mangoa kuutioituna","Paahdettuja kookoshiutaleita","Limetinkuorta"],
-      steps:["Sekoita kaikki ainekset purkissa.","Laita j\u00e4\u00e4kaappiin yön yli tai v\u00e4hint\u00e4\u00e4n 4 tunniksi.","Annostele laseihin, lis\u00e4\u00e4 mango, kookoshiutaleet ja limetinkuori."] },
-    time:"10 min + y\u00f6", serves:"4", difficulty:{en:"Easy",fi:"Helppo"} },
+  function toggleTheme() {
+    const nowLight = document.documentElement.classList.toggle('light');
+    document.getElementById('themeBtn').textContent = nowLight ? '☀️' : '🌙';
+    localStorage.setItem('theme', nowLight ? 'light' : 'dark');
+  }
 
-  { id:9, emoji:"🥚", bg:"#E8F5E9", category:"fitness", tags:["fitness","breakfast"], badge:"fitness", badgeKey:"badge_fitness",
-    macros:{kcal:420,protein:38,carbs:32,fat:14},
-    en:{ title:"High-protein egg white omelette", desc:"A lean, muscle-fuelling omelette packed with spinach, mushrooms, and feta. Fast and satisfying.",
-      ingredients:["6 egg whites","1 whole egg","80g baby spinach","80g mushrooms, sliced","30g feta, crumbled","1 tsp olive oil","Salt, pepper & chilli flakes","Fresh herbs"],
-      steps:["S\u00e4ut\u00e9 mushrooms in olive oil 3–4 min until golden. Add spinach and wilt.","Whisk egg whites and whole egg with seasoning.","Pour into pan over medium heat. Cook until edges set.","Add vegetables and feta to one half. Fold and serve."] },
-    fi:{ title:"Korkean proteiinin munanvalkuaismunakas", desc:"Kevyt, lihaksia ruokkiva munakas pinaatilla, sienill\u00e4 ja fetalla. Nopea ja t\u00e4ytt\u00e4v\u00e4.",
-      ingredients:["6 munanvalkuaista","1 kokonainen muna","80 g pinaattia","80 g sieni\u00e4 viipaloituna","30 g fetaa murustettu","1 tl oliivilj\u00f6y\u00e4","Suola, pippuri ja chili","Tuoreita yrttej\u00e4"],
-      steps:["Paista sienet \u00f6ljyss\u00e4 3–4 min. Lis\u00e4\u00e4 pinaatti.","Vatkaa munat mausteilla.","Kaada pannulle keskilämmölle. Kypsennä kunnes reunat kiintyv\u00e4t.","Lis\u00e4\u00e4 kasvikset ja feta. Taita ja tarjoile."] },
-    time:"15 min", serves:"1", difficulty:{en:"Easy",fi:"Helppo"} },
+  /* ══════════════════════════════════════
+     TABS
+  ══════════════════════════════════════ */
+  let currentTab = 'warmup';
+  function showTab(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.remove('active');
+      b.style.removeProperty('background');
+      b.style.removeProperty('color');
+      b.style.removeProperty('border-color');
+    });
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+    currentTab = id;
+    if (id === 'calendar') loadAndRenderCalendar();
+    else updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-  { id:10, emoji:"🍗", bg:"#E0F0EC", category:"fitness", tags:["fitness","lunch"], badge:"fitness", badgeKey:"badge_fitness",
-    macros:{kcal:510,protein:52,carbs:44,fat:12},
-    en:{ title:"Teriyaki chicken rice bowl", desc:"Lean grilled chicken in a light teriyaki glaze over brown rice with edamame and cucumber.",
-      ingredients:["300g chicken thighs, skinless","2 tbsp low-sodium soy sauce","1 tbsp honey","1 tsp sesame oil","1 tsp fresh ginger, grated","1 cup cooked brown rice","80g edamame","½ cucumber, sliced","1 tbsp sesame seeds","Pickled ginger"],
-      steps:["Mix soy, honey, sesame oil, and ginger into a marinade. Coat chicken and rest 20 min.","Grill or pan-fry chicken 4–5 min each side until cooked. Rest 5 min, then slice.","Build bowl: rice base, then chicken, edamame, and cucumber.","Drizzle remaining glaze and scatter sesame seeds."] },
-    fi:{ title:"Teriyaki-kanariisivati", desc:"Kevyt grillattu kana teriyaki-lasitteessa ruskealla riisill\u00e4 edamamen ja kurkun kanssa.",
-      ingredients:["300 g kananreisi\u00e4 nahattomia","2 rkl v\u00e4h\u00e4suolaista soijakastiketta","1 rkl hunajaa","1 tl seesamil\u00f6jy\u00e4","1 tl inkiv\u00e4\u00e4ri\u00e4 raastettuna","2 dl keitetty\u00e4 ruskeaa riisi\u00e4","80 g edamamea","½ kurkkua","1 rkl seesaminsiemeni\u00e4","Marinoitua inkiv\u00e4\u00e4ri\u00e4"],
-      steps:["Sekoita soija, hunaja, seesami ja inkiv\u00e4\u00e4ri marinadiksi. Kasta kana 20 min.","Grillaa kana 4–5 min per puoli. Lepuuta 5 min, sitten viipalointi.","Rakenna vati: riisi, kana, edamame ja kurkku.","Lis\u00e4\u00e4 glasyyri ja seesaminsiemenet."] },
-    time:"30 min", serves:"2", difficulty:{en:"Easy",fi:"Helppo"} },
+  /* ══════════════════════════════════════
+     CARDS
+  ══════════════════════════════════════ */
+  function toggleCard(card) {
+    if (event.target.classList.contains('ex-checkbox')) return;
+    card.classList.toggle('open');
+  }
 
-  { id:11, emoji:"🫘", bg:"#E8F5E9", category:"fitness", tags:["fitness","vegan","lunch"], badge:"fitness", badgeKey:"badge_fitness",
-    macros:{kcal:390,protein:22,carbs:48,fat:9},
-    en:{ title:"Lentil & quinoa power salad", desc:"A protein-dense plant-based bowl with green lentils, quinoa, roasted peppers, and lemon tahini.",
-      ingredients:["150g green lentils, cooked","100g quinoa, cooked","1 roasted red pepper, sliced","80g rocket","2 tbsp tahini","2 tbsp lemon juice","1 garlic clove, minced","2 tbsp water","Salt & pepper","Pomegranate seeds"],
-      steps:["Cook lentils and quinoa separately. Cool completely.","Whisk tahini, lemon juice, garlic, and water until smooth. Season.","Combine lentils, quinoa, rocket, and roasted pepper.","Drizzle with tahini dressing and scatter pomegranate seeds."] },
-    fi:{ title:"Linssi- & quinoa-voimasalaatti", desc:"Proteiinirikas kasvispohjainen vati vihreill\u00e4 linsseill\u00e4, quinoalla ja tahini-kastikkeella.",
-      ingredients:["150 g vihreit\u00e4 linssej\u00e4 keitettyn\u00e4","100 g quinoaa keitettyn\u00e4","1 paistettu punainen paprika","80 g rucolaa","2 rkl tahinia","2 rkl sitruunamehua","1 valkosipulinkynsi","2 rkl vett\u00e4","Suola ja pippuri","Granaaiiomensiemeni\u00e4"],
-      steps:["Keitä linssit ja quinoa erikseen. J\u00e4\u00e4hdyt\u00e4.","Vatkaa tahini, sitruunamachu, valkosipuli ja vesi kastikkeeksi.","Yhdist\u00e4 linssit, quinoa, rucola ja paprika.","Lis\u00e4\u00e4 kastike ja granaaiiomensiemenet."] },
-    time:"25 min", serves:"2", difficulty:{en:"Easy",fi:"Helppo"} },
+  /* ══════════════════════════════════════
+     CHECKBOXES
+  ══════════════════════════════════════ */
+  function initCheckboxes() {
+    const allCards = document.querySelectorAll('.exercise-card, .physio-card');
+    allCards.forEach((card, idx) => {
+      const page = card.closest('.page');
+      const tabId = page ? page.id : 'unknown';
+      const nameEl = card.querySelector('.exercise-name');
+      const name = nameEl ? nameEl.textContent.trim() : 'ex' + idx;
 
-  { id:12, emoji:"🍌", bg:"#FFFDE7", category:"fitness", tags:["fitness","breakfast"], badge:"fitness", badgeKey:"badge_fitness",
-    macros:{kcal:460,protein:35,carbs:55,fat:8},
-    en:{ title:"Protein banana overnight oats", desc:"Meal-prepped oats loaded with protein powder, banana, and almond butter for sustained energy.",
-      ingredients:["80g rolled oats","1 scoop vanilla protein powder (30g)","250ml skimmed milk or oat milk","1 ripe banana, mashed","1 tbsp almond butter","1 tsp honey","½ tsp cinnamon","Sliced banana & chia seeds to top"],
-      steps:["Mix oats, protein powder, milk, mashed banana, almond butter, honey, and cinnamon in a jar.","Stir well. Seal and refrigerate overnight.","In the morning, stir again. Add a splash of milk if too thick.","Top with sliced banana and chia seeds."] },
-    fi:{ title:"Proteiini-banaani-y\u00f6n yli kaurapuuro", desc:"Etukäteen valmistettava kaura proteiinijauheella, banaanilla ja mantelivoilla kest\u00e4v\u00e4\u00e4n energiaan.",
-      ingredients:["80 g kaurahiutaleita","1 annos vaniljaproteiinijauhetta (30 g)","2,5 dl rasvatonta maitoa","1 kyps\u00e4 banaani muussattuna","1 rkl mantelivoita","1 tl hunajaa","½ tl kanelia","Banaaniviipaleita ja chiansiemeni\u00e4"],
-      steps:["Sekoita kaura, proteiinijauhe, maito, banaani, mantelivoi, hunaja ja kaneli purkissa.","Sekoita hyvin. Sulje ja laita j\u00e4\u00e4kaappiin y\u00f6ksi.","Aamulla sekoita. Lis\u00e4\u00e4 tilkka maitoa tarvittaessa.","Lis\u00e4\u00e4 banaaniviipaleita ja chiansiemeni\u00e4."] },
-    time:"5 min + y\u00f6", serves:"1", difficulty:{en:"Easy",fi:"Helppo"} }
-];
+      const wrap = document.createElement('div');
+      wrap.className = 'cb-wrap';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.className = 'ex-checkbox';
+      cb.checked = false;
 
-let lang = "en", activeFilter = "all", searchQuery = "";
+      cb.addEventListener('change', async (e) => {
+        e.stopPropagation();
+        const done = cb.checked;
+        card.classList.toggle('done', done);
+        updateProgress();
+        if (!currentUser) { log.warn('Checkbox changed but no user logged in — not saved to cloud'); return; }
+        log.info('Saving checkbox:', tabId, '|', name, '|', done);
+        const { error } = await supa.from('exercise_checks').upsert({
+          user_id: currentUser.id, tab_id: tabId, exercise_name: name,
+          done: done, updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id,tab_id,exercise_name' });
+        if (error) log.error('Checkbox save failed:', error.message);
+        else log.ok('Checkbox saved:', name, '=', done);
+      });
 
-function t(k){ return i18n[lang][k] || i18n.en[k] || k; }
+      wrap.appendChild(cb);
+      card.querySelector('.card-header').appendChild(wrap);
+    });
+  }
 
-function setLang(l){
-  lang = l;
-  document.getElementById("btnEN").classList.toggle("active", l==="en");
-  document.getElementById("btnFI").classList.toggle("active", l==="fi");
-  applyTranslations();
-  renderGrid();
-}
+  async function syncChecksFromCloud() {
+    if (!currentUser) { log.warn('syncChecks: no user, skipping'); return; }
+    log.group('syncChecksFromCloud');
+    log.info('Fetching checks for user:', currentUser.id);
+    const { data, error } = await supa.from('exercise_checks')
+      .select('tab_id, exercise_name, done').eq('user_id', currentUser.id);
+    if (error) { log.error('Failed to fetch checks:', error.message); log.end(); return; }
+    if (!data) { log.warn('No data returned'); log.end(); return; }
+    log.ok('Fetched', data.length, 'exercise check rows');
+    const doneCount = data.filter(r => r.done).length;
+    log.info('Done:', doneCount, '/ Not done:', data.length - doneCount);
+    // Reset all first
+    document.querySelectorAll('.ex-checkbox').forEach(cb => {
+      cb.checked = false;
+      cb.closest('.exercise-card, .physio-card')?.classList.remove('done');
+    });
+    data.forEach(row => {
+      const page = document.getElementById(row.tab_id);
+      if (!page) { log.warn('Page not found for tab_id:', row.tab_id); return; }
+      page.querySelectorAll('.exercise-card, .physio-card').forEach(card => {
+        const nameEl = card.querySelector('.exercise-name');
+        if (nameEl && nameEl.textContent.trim() === row.exercise_name) {
+          const cb = card.querySelector('.ex-checkbox');
+          if (cb) { cb.checked = row.done; card.classList.toggle('done', row.done); }
+        }
+      });
+    });
+    updateProgress();
+    log.ok('Checkboxes restored from cloud');
+    log.end();
+  }
 
-function applyTranslations(){
-  document.querySelectorAll("[data-i18n]").forEach(el=>{ const v=i18n[lang][el.dataset.i18n]; if(v) el.textContent=v; });
-  document.querySelectorAll("[data-i18n-html]").forEach(el=>{ const v=i18n[lang][el.dataset.i18nHtml]; if(v) el.innerHTML=v; });
-  document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{ const v=i18n[lang][el.dataset.i18nPlaceholder]; if(v) el.placeholder=v; });
-}
+  function updateProgress() {
+    const page = document.getElementById(currentTab);
+    if (!page) return;
+    const all = page.querySelectorAll('.ex-checkbox');
+    const doneEls = page.querySelectorAll('.ex-checkbox:checked');
+    const total = all.length, doneCount = doneEls.length;
+    const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressDone').textContent = doneCount;
+    document.getElementById('progressTotal').textContent = total;
+    document.getElementById('progressWrap').style.display = total === 0 ? 'none' : 'block';
+  }
 
-function getBadgeHTML(r){
-  if(!r.badge||!r.badgeKey) return "";
-  const label=badgeLabels[r.badgeKey][lang];
-  const cls={quick:"badge-quick",popular:"badge-popular",vegan:"badge-vegan",fitness:"badge-fitness"}[r.badge]||"";
-  return `<span class="card-badge ${cls}">${label}</span>`;
-}
+  async function resetProgress() {
+    const page = document.getElementById(currentTab);
+    if (!page) return;
+    const names = [];
+    page.querySelectorAll('.ex-checkbox').forEach(cb => {
+      cb.checked = false;
+      const card = cb.closest('.exercise-card, .physio-card');
+      if (card) card.classList.remove('done');
+      const nameEl = card?.querySelector('.exercise-name');
+      const name = nameEl ? nameEl.textContent.trim() : '';
+      if (name) names.push(name);
+    });
+    updateProgress();
+    if (!currentUser || !names.length) return;
+    await supa.from('exercise_checks')
+      .update({ done: false, updated_at: new Date().toISOString() })
+      .eq('user_id', currentUser.id).eq('tab_id', currentTab).in('exercise_name', names);
+  }
 
-function getMacroRowHTML(r){
-  if(!r.macros) return "";
-  return `<div class="macro-row"><span class="macro-pill">${r.macros.kcal} kcal</span><span class="macro-pill">${r.macros.protein}g ${t("protein")}</span></div>`;
-}
+  /* ══════════════════════════════════════
+     CALENDAR
+  ══════════════════════════════════════ */
+  const TYPE_COLORS = {
+    'Ohjelma 1': '#c8a84b', 'Ohjelma 2': '#e8864a', 'Ohjelma 3': '#9b6fe8',
+    'Fysioterapia': '#4a9eca', 'Muu': '#3dba6e'
+  };
+  const TYPE_ICONS = {
+    'Ohjelma 1': '💪', 'Ohjelma 2': '🏋️', 'Ohjelma 3': '🔥',
+    'Fysioterapia': '🏥', 'Muu': '⚡'
+  };
+  const MONTHS_FI = ['Tammikuu','Helmikuu','Maaliskuu','Huhtikuu','Toukokuu','Kesäkuu',
+                     'Heinäkuu','Elokuu','Syyskuu','Lokakuu','Marraskuu','Joulukuu'];
 
-function renderGrid(){
-  const grid=document.getElementById("grid");
-  const noR=document.getElementById("noResults");
-  const count=document.getElementById("countBadge");
-  const filtered=recipes.filter(r=>{
-    const mf=activeFilter==="all"||r.tags.includes(activeFilter);
-    const q=searchQuery.toLowerCase();
-    const rd=r[lang];
-    const ms=!q||rd.title.toLowerCase().includes(q)||rd.desc.toLowerCase().includes(q)||r.category.includes(q);
-    return mf&&ms;
-  });
-  count.textContent=i18n[lang].count_recipes(filtered.length);
-  if(filtered.length===0){ grid.innerHTML=""; noR.style.display="block"; return; }
-  noR.style.display="none";
-  grid.innerHTML=filtered.map(r=>{
-    const rd=r[lang];
-    const catLabel=i18n[lang][`cat_${r.category}`]||r.category;
-    const diff=typeof r.difficulty==="object"?r.difficulty[lang]:r.difficulty;
-    return `<div class="recipe-card" onclick="openDetail(${r.id})">
-      <div class="card-thumb" style="background:${r.bg}">
-        <span style="font-size:50px">${r.emoji}</span>
-        ${getBadgeHTML(r)}
-      </div>
-      <div class="card-body">
-        <p class="card-category">${catLabel}</p>
-        <h3 class="card-title">${rd.title}</h3>
-        ${getMacroRowHTML(r)}
-        <p class="card-desc">${rd.desc}</p>
-        <div class="card-meta">
-          <span class="meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${r.time}</span>
-          <span class="meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>${lang==="fi"?"Ann.":"Srv."} ${r.serves}</span>
-          <span class="meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>${diff}</span>
+  let calYear = new Date().getFullYear();
+  let calMonth = new Date().getMonth();
+  let selectedType = 'Ohjelma 1';
+  let cachedSessions = [];
+
+  function todayStr() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function selectType(btn) {
+    document.querySelectorAll('.log-type-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedType = btn.getAttribute('data-type');
+    log.info('Selected workout type:', selectedType);
+  }
+
+  async function loadAndRenderCalendar() {
+    log.group('loadAndRenderCalendar');
+    if (!currentUser) { log.warn('No user — skipping calendar load'); log.end(); return; }
+    document.getElementById('calGrid').innerHTML =
+      '<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--muted);font-size:13px;">Loading... ⏳</div>';
+    // Order by created_at instead of ts for reliability
+    const { data, error } = await supa.from('sessions')
+      .select('id,date,type,ts,created_at').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+    if (error) { log.error('Failed to load sessions:', error.message); }
+    else { cachedSessions = data || []; log.ok('Loaded', cachedSessions.length, 'sessions'); }
+    log.end();
+    renderCalendar(); renderSessionsList(); updateStats();
+  }
+
+  async function logSession() {
+    if (!currentUser) { log.warn('logSession: no user'); return; }
+    const selectedBtn = document.querySelector('.log-type-btn.selected');
+    const typeToLog = selectedBtn ? selectedBtn.getAttribute('data-type') : selectedType;
+    const today = todayStr();
+    log.group('logSession');
+    log.info('Type:', typeToLog, '| Date:', today);
+    if (cachedSessions.find(s => s.date === today && s.type === typeToLog)) {
+      log.warn('Already logged today for type:', typeToLog);
+      log.end();
+      alert('This workout is already logged for today!'); return;
+    }
+    const btn = document.querySelector('.log-save-btn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+    const { error } = await supa.from('sessions')
+      .insert({ user_id: currentUser.id, date: today, type: typeToLog, ts: Date.now() });
+    if (error) {
+      log.error('logSession failed:', error.message);
+      log.end();
+      alert('Error: ' + error.message);
+      btn.disabled = false; btn.textContent = '✅ Log Workout'; return;
+    }
+    log.ok('Session inserted, reloading from cloud...');
+    const { data: reloaded, error: reloadErr } = await supa.from('sessions')
+      .select('id,date,type,ts,created_at').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+    if (!reloadErr && reloaded) {
+      cachedSessions = reloaded;
+      log.ok('Reloaded', cachedSessions.length, 'sessions from cloud');
+    }
+    log.end();
+    renderCalendar(); renderSessionsList(); updateStats();
+    btn.textContent = '🎉 Saved!';
+    setTimeout(() => { btn.textContent = '✅ Log Workout'; btn.disabled = false; }, 1800);
+  }
+
+  async function deleteSession(id) {
+    if (!currentUser) return;
+    log.info('Deleting session id:', id);
+    const { error } = await supa.from('sessions').delete().eq('user_id', currentUser.id).eq('id', id);
+    if (error) { log.error('Delete failed:', error.message); return; }
+    cachedSessions = cachedSessions.filter(s => s.id !== id);
+    log.ok('Session deleted');
+    renderCalendar(); renderSessionsList(); updateStats();
+  }
+
+  function calNav(dir) {
+    calMonth += dir;
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    if (calMonth < 0)  { calMonth = 11; calYear--; }
+    renderCalendar();
+  }
+
+  function renderCalendar() {
+    document.getElementById('calMonthLabel').textContent = MONTHS_FI[calMonth] + ' ' + calYear;
+    const dayMap = {};
+    cachedSessions.forEach(s => {
+      if (!dayMap[s.date]) dayMap[s.date] = [];
+      if (!dayMap[s.date].includes(s.type)) dayMap[s.date].push(s.type);
+    });
+    const today = todayStr();
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+    ['Ma','Ti','Ke','To','Pe','La','Su'].forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'cal-day-name'; el.textContent = d; grid.appendChild(el);
+    });
+    let startOffset = new Date(calYear, calMonth, 1).getDay() - 1;
+    if (startOffset < 0) startOffset = 6;
+    for (let i = 0; i < startOffset; i++) {
+      const el = document.createElement('div'); el.className = 'cal-day cal-empty'; grid.appendChild(el);
+    }
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+      const el = document.createElement('div'); el.className = 'cal-day';
+      if (dateStr === today) el.classList.add('cal-today');
+      const types = dayMap[dateStr] || [];
+      if (types.length > 0) {
+        el.classList.add('has-session');
+        el.style.background = TYPE_COLORS[types[0]] || '#3dba6e';
+        el.style.borderColor = TYPE_COLORS[types[0]] || '#3dba6e';
+      }
+      const numEl = document.createElement('span');
+      numEl.textContent = d; el.appendChild(numEl);
+      if (types.length > 0) {
+        const dots = document.createElement('div'); dots.className = 'cal-dots';
+        types.slice(0,4).forEach(() => {
+          const dot = document.createElement('div'); dot.className = 'cal-dot'; dots.appendChild(dot);
+        });
+        el.appendChild(dots);
+      }
+      grid.appendChild(el);
+    }
+    const legend = document.getElementById('calLegend');
+    legend.innerHTML = '';
+    Object.entries(TYPE_COLORS).forEach(([type, color]) => {
+      const item = document.createElement('div'); item.className = 'cal-legend-item';
+      item.innerHTML = `<div class="cal-legend-dot" style="background:${color}"></div>${TYPE_ICONS[type]} ${type}`;
+      legend.appendChild(item);
+    });
+  }
+
+  function renderSessionsList() {
+    const sessions = [...cachedSessions].sort((a,b) => {
+      return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+    });
+    const el = document.getElementById('sessionsList');
+    if (!sessions.length) {
+      el.innerHTML = '<div class="no-sessions">No workout history yet.<br>Log your first session! 💪</div>';
+      return;
+    }
+    el.innerHTML = sessions.map(s => {
+      const d = new Date(s.date + 'T12:00:00');
+      const dateLabel = d.toLocaleDateString('fi-FI', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+      return `<div class="session-item">
+        <div class="session-icon">${TYPE_ICONS[s.type]||'⚡'}</div>
+        <div class="session-info">
+          <div class="session-type" style="color:${TYPE_COLORS[s.type]||'#3dba6e'}">${s.type}</div>
+          <div class="session-date">${dateLabel}</div>
         </div>
-      </div>
-    </div>`;
-  }).join("");
-}
+        <button class="session-del" onclick="deleteSession('${s.id}')">Delete</button>
+      </div>`;
+    }).join('');
+  }
 
-function openDetail(id){
-  const r=recipes.find(x=>x.id===id); if(!r) return;
-  const rd=r[lang];
-  const catLabel=i18n[lang][`cat_${r.category}`]||r.category;
-  const diff=typeof r.difficulty==="object"?r.difficulty[lang]:r.difficulty;
-  document.getElementById("detailThumb").style.background=r.bg;
-  document.getElementById("detailThumb").innerHTML=`<span style="font-size:72px">${r.emoji}</span>`;
-  document.getElementById("detailCategory").textContent=catLabel.toUpperCase();
-  document.getElementById("detailTitle").textContent=rd.title;
-  document.getElementById("detailDesc").textContent=rd.desc;
-  document.getElementById("detailStats").innerHTML=`
-    <div class="stat"><div class="stat-val">${r.time}</div><div class="stat-key">${t("time_label")}</div></div>
-    <div class="stat"><div class="stat-val">${r.serves}</div><div class="stat-key">${t("serves_label")}</div></div>
-    <div class="stat"><div class="stat-val">${diff}</div><div class="stat-key">${t("difficulty_label")}</div></div>
-    ${r.macros?`<div class="stat"><div class="stat-val">${r.macros.kcal}</div><div class="stat-key">kcal</div></div>`:""}`;
-  const dm=document.getElementById("detailMacros");
-  if(r.macros){ dm.style.display="flex"; dm.innerHTML=`<span class="detail-macro">${r.macros.protein}g ${t("protein")}</span><span class="detail-macro">${r.macros.carbs}g ${t("carbs")}</span><span class="detail-macro">${r.macros.fat}g ${t("fat")}</span>`; }
-  else { dm.style.display="none"; dm.innerHTML=""; }
-  document.getElementById("detailIngredients").innerHTML=rd.ingredients.map(i=>`<li>${i}</li>`).join("");
-  document.getElementById("detailSteps").innerHTML=rd.steps.map((s,i)=>`<li><span class="step-num">${i+1}</span><span>${s}</span></li>`).join("");
-  const ov=document.getElementById("overlay");
-  ov.classList.add("open"); ov.scrollTop=0; document.body.style.overflow="hidden";
-}
+  function updateStats() {
+    const now = new Date();
+    const thisMonth = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+    const monthCount = cachedSessions.filter(s => s.date.startsWith(thisMonth)).length;
+    const uniqueDays = [...new Set(cachedSessions.map(s => s.date))].sort();
+    let streak = 0, d = new Date();
+    while (true) {
+      const ds = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      if (uniqueDays.includes(ds)) { streak++; d.setDate(d.getDate()-1); } else break;
+    }
+    document.getElementById('statTotal').textContent = cachedSessions.length;
+    document.getElementById('statMonth').textContent = monthCount;
+    document.getElementById('statStreak').textContent = streak;
+  }
 
-function closeDetail(){ document.getElementById("overlay").classList.remove("open"); document.body.style.overflow=""; }
-document.getElementById("closeBtn").onclick=closeDetail;
-document.getElementById("overlay").onclick=(e)=>{ if(e.target===document.getElementById("overlay")) closeDetail(); };
-document.addEventListener("keydown",(e)=>{ if(e.key==="Escape") closeDetail(); });
-document.querySelectorAll(".pill").forEach(p=>{ p.onclick=()=>{ document.querySelectorAll(".pill").forEach(x=>x.classList.remove("active")); p.classList.add("active"); activeFilter=p.dataset.filter; renderGrid(); }; });
-document.getElementById("searchInput").oninput=(e)=>{ searchQuery=e.target.value; renderGrid(); };
-applyTranslations();
-renderGrid();
+  /* ══════════════════════════════════════
+     INIT
+  ══════════════════════════════════════ */
+  document.addEventListener('DOMContentLoaded', async () => {
+    log.group('APP INIT');
+    // Set theme button icon
+    const isLight = document.documentElement.classList.contains('light');
+    document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
+    log.info('Theme:', isLight ? 'light' : 'dark');
+
+    initCheckboxes();
+    log.info('Checkboxes initialized');
+    updateProgress();
+
+    // Check if already logged in (persisted session)
+    const { data: { session } } = await supa.auth.getSession();
+    if (session?.user) {
+      log.ok('Restored session for:', session.user.email);
+      onSignedIn(session.user);
+    } else {
+      log.info('No saved session — showing login screen');
+    }
+    log.end();
+  });
 </script>
 </body>
 </html>
